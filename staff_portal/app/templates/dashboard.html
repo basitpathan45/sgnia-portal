@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><div class="eyebrow">STAFF WORKSPACE</div><h1>{{ current_user.role_label }} dashboard</h1><p class="muted">Welcome, {{ current_user.name }} · {{ current_user.department }}</p></div>
+    {% if can('create_notification') %}<a class="button primary" href="{{ url_for('staff.notification_new') }}">＋ New notification</a>{% endif %}
+  </div>
+  <section class="stat-grid" aria-label="Notification summary">
+    <article class="stat-card"><span>Draft notifications</span><strong>{{ draft_count }}</strong><small>Work in progress</small></article>
+    {% if can('view_approval_history') %}<article class="stat-card"><span>Pending approval</span><strong>{{ pending_count }}</strong><small>Awaiting review</small></article>{% endif %}
+    <article class="stat-card"><span>Published</span><strong>{{ published_count }}</strong><small>In the digital archive</small></article>
+  </section>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Recently updated notifications</h2><p class="muted">Visible according to your staff role.</p></div><a class="text-link" href="{{ url_for('staff.notifications') }}">View register →</a></div>
+    {% if recent_notifications %}<div class="table-wrap"><table><thead><tr><th>Reference</th><th>Title</th><th>Department</th><th>Status</th><th>Updated</th></tr></thead><tbody>
+      {% for item in recent_notifications %}<tr><td class="reference">{{ item.reference }}</td><td>{{ item.title }}</td><td>{{ item.department }}</td><td><span class="status {{ item.status|lower|replace(' ', '-') }}">{{ item.status }}</span></td><td>{{ item.updated_at.strftime('%d %b %Y') }}</td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<div class="empty-state">No notification records have been created yet.</div>{% endif %}
+  </section>
+  {% if current_user.role == 'auditor' and recent_logs %}<section class="panel"><div class="panel-heading"><h2>Recent audit activity</h2><a class="text-link" href="{{ url_for('staff.audit') }}">Open audit trail →</a></div><div class="table-wrap"><table><thead><tr><th>Action</th><th>Staff member</th><th>Details</th><th>Time</th></tr></thead><tbody>{% for log in recent_logs %}<tr><td>{{ log.action }}</td><td>{{ log.actor.name if log.actor else 'System' }}</td><td>{{ log.details }}</td><td>{{ log.created_at.strftime('%d %b %Y %H:%M') }}</td></tr>{% endfor %}</tbody></table></div></section>{% endif %}
+{% endblock %}

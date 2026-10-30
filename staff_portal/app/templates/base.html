@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Staff workspace{% endblock %} · SGNIA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='staff.css') }}">
+  </head>
+  <body>
+    {% if current_user.is_authenticated %}
+      <div class="workspace">
+        <aside class="sidebar">
+          <a class="wordmark" href="{{ url_for('staff.dashboard') }}"><span class="mark">S</span><span>SGNIA<small>STAFF WORKSPACE</small></span></a>
+          <div class="nav-label">WORKSPACE</div>
+          <nav class="side-nav" aria-label="Staff workspace">
+            {% if can('view_dashboard') %}<a href="{{ url_for('staff.dashboard') }}">▦ <span>Dashboard</span></a>{% endif %}
+            {% if can('view_notifications') %}<a href="{{ url_for('staff.notifications') }}">▤ <span>Notifications</span></a>{% endif %}
+            {% if can('create_notification') %}<a href="{{ url_for('staff.notification_new') }}">＋ <span>Create notification</span></a>{% endif %}
+            {% if can('view_approval_history') %}<a href="{{ url_for('staff.approvals') }}">✓ <span>Approvals & history</span></a>{% endif %}
+            {% if can('view_archive') %}<a href="{{ url_for('staff.archive') }}">▣ <span>Digital archive</span></a>{% endif %}
+            {% if can('view_versions') %}<a href="{{ url_for('staff.versions') }}">◷ <span>Versions & amendments</span></a>{% endif %}
+            {% if can('use_ocr') %}<a href="{{ url_for('staff.ocr') }}">▧ <span>OCR digitization</span></a>{% endif %}
+            {% if can('manage_departments') %}<div class="nav-label">ADMINISTRATION</div><a href="{{ url_for('staff.departments') }}">⌂ <span>Departments</span></a>{% endif %}
+            {% if can('manage_users') %}<a href="{{ url_for('staff.users') }}">♙ <span>Users</span></a>{% endif %}
+            {% if can('manage_roles') %}<a href="{{ url_for('staff.roles') }}">⬡ <span>Roles & permissions</span></a>{% endif %}
+            {% if can('manage_signing_keys') %}<a href="{{ url_for('staff.keys') }}">⚿ <span>Signing keys</span></a>{% endif %}
+            {% if can('configure_workflow') %}<a href="{{ url_for('staff.workflow') }}">⚙ <span>Workflow settings</span></a>{% endif %}
+            {% if can('view_audit') %}<div class="nav-label">OVERSIGHT</div><a href="{{ url_for('staff.audit') }}">◉ <span>Audit trail</span></a>{% endif %}
+          </nav>
+          <div class="sidebar-user"><span class="avatar">{{ current_user.name[:1]|upper }}</span><span class="user-id"><strong>{{ current_user.name }}</strong><small>{{ current_user.role_label }} · {{ current_user.department }}</small></span></div>
+        </aside>
+        <div class="main-shell">
+          <header class="topbar"><span class="breadcrumb">SGNIA <span>/</span> Staff workspace</span><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout" type="submit">Sign out</button></form></header>
+          <main class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+          </main>
+          <footer class="footer">University project prototype · Staff workspace foundation</footer>
+        </div>
+      </div>
+    {% else %}
+      <main class="login-shell">{% block public_content %}{% endblock %}</main>
+    {% endif %}
+  </body>
+</html>

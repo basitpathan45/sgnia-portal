@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Audit trail{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><div class="eyebrow">OVERSIGHT</div><h1>Audit trail</h1><p class="muted">Recent staff actions recorded by this application.</p></div></div>
+  <section class="panel"><div class="table-wrap"><table><thead><tr><th>Time</th><th>Actor</th><th>Role</th><th>Action</th><th>Target</th><th>Details</th></tr></thead><tbody>{% for log in logs %}<tr><td>{{ log.created_at.strftime('%d %b %Y %H:%M:%S') }}</td><td>{{ log.actor.name if log.actor else 'System' }}</td><td>{{ log.actor.role_label if log.actor else '—' }}</td><td>{{ log.action }}</td><td>{{ log.target_type }} {{ log.target_id or '' }}</td><td>{{ log.details }}</td></tr>{% else %}<tr><td colspan="6" class="empty-state">No audit activity yet.</td></tr>{% endfor %}</tbody></table></div></section>
+  <p class="notice">{% if chain_valid %}Audit hash chain verified. This detects record edits or removals, but does not prevent a database administrator from rewriting the entire chain.{% else %}Audit chain integrity check FAILED at entry {{ invalid_entry_id }}. Preserve the database and investigate before relying on this log.{% endif %}</p>
+{% endblock %}

@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: sgnia-sindh-portal
+    env: python
+    region: singapore
+    plan: free
+    branch: main
+    buildCommand: pip install -r staff_portal/requirements.txt
+    startCommand: gunicorn --chdir staff_portal run:app
+    envVars:
+      - key: APP_ENV
+        value: development
+      - key: FLASK_SECRET_KEY
+        value: Za7aJQYZbRjo4StPElZRP0vlUaQK1x_y0e5-Dh-uFnqVQ0lCeFU-9opMVrSguaxC
+      - key: SUPABASE_URL
+        value: https://kjbykrabingylawchnyy.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqYnlrcmFiaW5neWxhd2Nobnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5MzM0MzQsImV4cCI6MjEwODUwOTQzNH0.T5K5GoszV1CCCIE1Xe0_ml60pVY0WFVcDyKtlE6lI5o
+      - key: DATABASE_URL
+        value: postgresql+psycopg2://postgres.kjbykrabingylawchnyy:SGNIA2787858@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres?sslmode=require

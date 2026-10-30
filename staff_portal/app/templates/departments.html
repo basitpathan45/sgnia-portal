@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Departments{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">ADMINISTRATION</div>
+      <h1>Departments</h1>
+      <p class="muted">Sindh Government administrative departments, codes, and governance profiles.</p>
+    </div>
+  </div>
+  <section class="panel">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 100px;">Code</th>
+            <th style="width: 280px;">Department</th>
+            <th>Overview &amp; Administrative Mandate</th>
+            <th style="width: 90px;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for department in departments %}
+            <tr>
+              <td><code>{{ department.code or '—' }}</code></td>
+              <td>
+                <strong>{{ department.name }}</strong>
+                {% if department.short_name and department.short_name != department.name %}
+                  <div class="muted" style="font-size: 0.85rem;">{{ department.short_name }}</div>
+                {% endif %}
+              </td>
+              <td>
+                <div>{{ department.overview or 'Operates under the Government of Sindh framework for policy formulation and public service delivery.' }}</div>
+              </td>
+              <td>
+                <span class="status-pill status-approved" style="font-size: 0.75rem;">
+                  {{ 'Active' if department.active else 'Inactive' }}
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="4" class="empty-state">No departments configured.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

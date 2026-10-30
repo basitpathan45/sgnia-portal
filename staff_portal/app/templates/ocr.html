@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}OCR & document digitization{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><div class="eyebrow">STAFF WORKSPACE</div><h1>OCR & document digitization</h1><p class="muted">Extract text locally, then review it before creating a draft.</p></div></div>
+  <p class="notice">{% if engine_available %}Local Tesseract OCR is available. Documents are processed on this server and are not sent to an external service.{% else %}Local Tesseract OCR is not installed. Text-based PDFs can still be extracted; scanned PDFs require a local Tesseract installation.{% endif %} Extraction is not proofread or an official transcription.</p>
+  <section class="panel">
+    <h2>Upload a PDF for text extraction</h2>
+    <form method="post" enctype="multipart/form-data" class="form-grid">
+      {{ form.hidden_tag() }}
+      <div class="field-group span-2">{{ form.document.label }}{{ form.document(accept=".pdf,application/pdf") }}{% for error in form.document.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+      <div class="span-2">{{ form.submit(class="button primary") }}</div>
+    </form>
+  </section>
+{% endblock %}

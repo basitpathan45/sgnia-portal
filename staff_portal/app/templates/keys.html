@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Signing keys{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div><div class="eyebrow">ADMINISTRATION</div><h1>Project signing keys</h1><p class="muted">Ed25519 signatures bind a published PDF hash to its archive reference and version.</p></div>
+    <form method="post" action="{{ url_for('staff.generate_key') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="button primary" type="submit">{% if signing_keys %}Rotate active key{% else %}Generate signing key{% endif %}</button>
+    </form>
+  </div>
+  <p class="notice">These project-generated signatures are not Government PKI signatures and do not establish official Government authority. The private key is stored outside the database in the application instance directory; protect and back up that directory securely. Generating a new key deactivates the previous key, while its public key remains available to verify older signatures.</p>
+  <section class="panel">
+    <div class="table-wrap"><table><thead><tr><th>Key ID (SHA-256)</th><th>Public key (Base64)</th><th>Created</th><th>Status</th></tr></thead><tbody>
+      {% for key in signing_keys %}<tr><td class="reference">{{ key.key_id }}</td><td><code>{{ key.public_key }}</code></td><td>{{ key.created_at.strftime('%d %b %Y %H:%M:%S') }}</td><td>{{ 'Active' if key.active else 'Historical (verification only)' }}</td></tr>
+      {% else %}<tr><td colspan="4" class="empty-state">No project signing key exists. Generate one before publishing signed notifications.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+{% endblock %}

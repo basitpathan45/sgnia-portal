@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Versions & amendments{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><div class="eyebrow">RECORD HISTORY</div><h1>Versions & amendments</h1><p class="muted">Each published amendment is reviewed as a new version. Earlier published PDFs remain available in this staff history.</p></div></div>
+  <section class="panel"><div class="table-wrap"><table><thead><tr><th>Reference</th><th>Version</th><th>Title</th><th>Department</th><th>Status</th><th>Change summary</th><th>Created</th><th>Document</th><th>Action</th></tr></thead><tbody>
+  {% for version in versions %}<tr>
+    <td class="reference">{{ version.notification.reference }}</td>
+    <td>v{{ version.version_number }}</td>
+    <td>{{ version.title }}</td>
+    <td>{{ version.department }}</td>
+    <td><span class="status {{ version.status|lower|replace(' ', '-') }}">{{ version.status }}</span></td>
+    <td>{{ version.change_summary or '—' }}</td>
+    <td>{{ version.created_at.strftime('%d %b %Y') }}</td>
+    <td>{% if version.pdf_path %}<a class="text-link" href="{{ url_for('staff.staff_version_pdf', notification_id=version.notification_id, version_id=version.id) }}" target="_blank" rel="noopener noreferrer">View PDF</a>{% else %}—{% endif %}</td>
+    <td>{% if version.status == 'Draft' and version.version_number > 1 and (current_user.role == 'super_admin' or version.created_by_id == current_user.id) %}<form method="post" action="{{ url_for('staff.submit_amendment', notification_id=version.notification_id, version_id=version.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="text-button" type="submit">Submit for approval</button></form>{% elif version.status == 'Published' and version.notification.status == 'Published' and can('create_notification') and (current_user.role == 'super_admin' or version.department == current_user.department) and version.version_number == version.notification.versions[-1].version_number %}<a class="text-link" href="{{ url_for('staff.notification_amend', notification_id=version.notification_id) }}">Create amendment</a>{% else %}—{% endif %}</td>
+  </tr>{% else %}<tr><td colspan="9" class="empty-state">No version history is available for this view.</td></tr>{% endfor %}
+  </tbody></table></div></section>
+{% endblock %}

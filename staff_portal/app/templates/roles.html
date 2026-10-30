@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Roles & permissions{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><div class="eyebrow">ADMINISTRATION</div><h1>Roles & permissions</h1><p class="muted">Read-only role matrix based on the supplied SDGNM RBAC screenshot.</p></div></div>
+  <section class="panel"><div class="table-wrap"><table><thead><tr><th>Permission</th>{% for role in role_permissions %}<th>{{ role.replace('_',' ')|title }}</th>{% endfor %}</tr></thead><tbody>{% for permission in ['create_notification','approve_notification','publish_notification','use_ocr','manage_users','manage_signing_keys','view_audit'] %}<tr><td>{{ permission.replace('_',' ')|title }}</td>{% for role, permissions in role_permissions.items() %}<td class="{{ 'allowed' if permission in permissions else 'denied' }}">{{ 'Allowed' if permission in permissions else 'Not allowed' }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div></section>
+  <p class="notice">The server enforces permissions on each protected route and action. Hiding a navigation link alone is not access control.</p>
+{% endblock %}

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b3a32">
+    <meta name="description" content="SGNIA university prototype linking to notifications published on the official Government of Sindh portal.">
+    <title>SGNIA | Sindh Government Notification Issuing Authority</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="records.js" defer></script>
+    <script src="supabase-config.js" defer></script>
+    <script src="public-records.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" integrity="sha384-hStSInNIZ8ljtOVrmrgf7zdHMapaLBWoSnPTtF0nzsybp4+LuhDz6sHuEVpWIX8o" crossorigin="anonymous" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <!-- Shared project label and link to the about section. -->
+    <div class="utility-bar">
+      <div class="container utility-inner">
+        <span>SGNIA · Public archive </span>
+        <div class="utility-links">
+          <a href="#about">About this archive <span aria-hidden="true">↗</span></a>
+          <a href="/login">Staff login <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Site logo, name, and primary navigation. -->
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#" aria-label="SGNIA — Sindh Government Notification Issuing Authority home">
+          <img class="brand-mark" src="assets/government-of-sindh-logo.png" alt="">
+          <span class="brand-copy">
+            <strong>SGNIA</strong>
+            <span>Sindh Government Notification Issuing Authority</span>
+          </span>
+        </a>
+        <nav class="main-nav" aria-label="Main navigation">
+          <a class="nav-link" href="archive.html">Public archive</a>
+          <a class="nav-link" href="#verify">Verify a document</a>
+          <a class="nav-link" href="#about">About</a>
+        </nav>
+        <div class="header-actions">
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false">
+            <span class="theme-toggle-icon" aria-hidden="true">☾</span>
+            <span class="theme-toggle-label">Night mode</span>
+          </button>
+          <a class="header-verify" href="#verify"><span aria-hidden="true">✓</span> Verify document</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <!-- Introductory banner and link to the full archive. -->
+      <section class="hero">
+        <div class="hero-pattern" aria-hidden="true"></div>
+        <div class="container hero-content">
+          <div class="hero-copy">
+            <div class="eyebrow"><span class="live-dot"></span> PUBLIC RECORDS · SINDH</div>
+            <h1>Official records.<br><span>Open to everyone.</span></h1>
+            <p>Find published Government of Sindh portal listings and notifications published through this project. Search the archive or open the available document.</p>
+            <a class="hero-link" href="archive.html">Browse all 55 official listings <span aria-hidden="true">→</span></a>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="art-orbit orbit-one"></div>
+            <div class="art-orbit orbit-two"></div>
+            <div class="art-document">
+              <div class="art-doc-seal"><span>G</span></div>
+              <div class="art-doc-line long"></div>
+              <div class="art-doc-line medium"></div>
+              <div class="art-doc-line short"></div>
+              <div class="art-doc-rule"></div>
+              <div class="art-doc-line medium"></div>
+              <div class="art-doc-line long"></div>
+              <div class="art-doc-stamp">OFFICIAL<br>RECORD</div>
+            </div>
+            <div class="art-check"><span aria-hidden="true">✓</span></div>
+            <div class="art-spark spark-one">✳</div>
+            <div class="art-spark spark-two">✦</div>
+          </div>
+        </div>
+        <div class="hero-bottom">
+          <div class="container hero-bottom-inner">
+            <span><span class="hero-bottom-icon">⌕</span> Search by title, department, date or portal listing number</span>
+            <span><span class="hero-bottom-icon">◉</span> Public access · No account required</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Homepage archive preview with search and filters. -->
+      <section class="container archive-section" id="archive">
+        <div class="section-heading">
+          <div>
+            <div class="section-kicker">PUBLIC ARCHIVE PREVIEW</div>
+            <h2>Recent notification records</h2>
+            <p>Browse Government source listings and notifications published through the SGNIA staff workflow.</p>
+          </div>
+          <a class="archive-total archive-all-link" href="archive.html"><span class="total-dot"></span><strong>Browse all <span id="total-records">55</span></strong> archive records <span aria-hidden="true">→</span></a>
+        </div>
+
+        <form class="search-panel" id="search-form">
+          <div class="search-top">
+            <label class="field search-field">
+              <span class="field-label">Search the archive</span>
+              <span class="input-wrap">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg>
+                <input id="keyword" name="keyword" type="search" placeholder="Try a title, keyword or portal listing number">
+              </span>
+            </label>
+            <label class="field department-field">
+              <span class="field-label">Department</span>
+              <span class="select-wrap">
+                <select id="department" name="department">
+                  <option value="">All departments</option>
+                </select>
+                <span class="select-chevron" aria-hidden="true">⌄</span>
+              </span>
+            </label>
+            <button class="search-button" type="submit"><span aria-hidden="true">⌕</span> Search records</button>
+          </div>
+          <div class="search-bottom">
+            <span class="filter-hint"><span aria-hidden="true">☷</span> Narrow your search</span>
+            <label class="field compact-field">
+              <span class="field-label">Posted from</span>
+              <input id="date-from" name="date-from" type="date">
+            </label>
+            <label class="field compact-field">
+              <span class="field-label">Posted to</span>
+              <input id="date-to" name="date-to" type="date">
+            </label>
+            <label class="field compact-field reference-field">
+              <span class="field-label">Archive / official ref</span>
+              <input id="reference" name="reference" type="search" placeholder="e.g. SGNIA-ARCH-005 or official ref">
+            </label>
+            <button class="clear-button" id="clear-filters" type="reset">Clear filters <span aria-hidden="true">↺</span></button>
+          </div>
+        </form>
+
+        <div class="results-toolbar">
+          <p id="results-summary" aria-live="polite">Loading records…</p>
+          <label class="sort-control">Sort by
+            <select id="sort-order" aria-label="Sort records">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="record-list" id="record-list" aria-live="polite"></div>
+        <div class="empty-state" id="empty-state" hidden>
+          <div class="empty-icon" aria-hidden="true">⌕</div>
+          <h3>No matching records</h3>
+          <p>Try another keyword, department, posted date range or portal listing number.</p>
+          <button class="text-button" id="empty-clear" type="button">Clear all filters <span aria-hidden="true">→</span></button>
+        </div>
+        <p class="archive-note"><span aria-hidden="true">ⓘ</span> Records and PDF links are listed from the <a href="https://www.sindh.gov.pk/notifications?show=notification" target="_blank" rel="noopener noreferrer">SGNIA official Government of Sindh notifications portal</a>. SGNIA is a university project prototype, not a Government of Sindh service.</p>
+      </section>
+
+      <!-- Find a portal listing and open its official PDF. -->
+      <section class="verify-section" id="verify">
+        <div class="container verify-inner">
+          <div class="verify-copy">
+            <div class="section-kicker light-kicker">PUBLIC RECORD LOOKUP</div>
+            <h2>Find a document<br><span>at its source.</span></h2>
+            <p>Search an archive reference, official document reference or portal listing number to find its PDF.</p>
+            <div class="verify-assurance"><span aria-hidden="true">✓</span> Public lookup · No sign-in required</div>
+          </div>
+          <form class="verify-card" id="verify-form">
+            <div class="verify-card-icon" aria-hidden="true">⌕</div>
+            <h3>Find an archive record</h3>
+            <p>Enter a portal listing number or a document title.</p>
+            <label class="field verify-field" for="verify-reference">
+              <span class="field-label">Archive ref, official ref or title</span>
+              <input id="verify-reference" name="verify-reference" type="text" placeholder="e.g. SGNIA-ARCH-005 or SOVI(SGA&CD)" required>
+            </label>
+            <button class="verify-button" type="submit">Find record <span aria-hidden="true">→</span></button>
+            <div id="verify-result" class="verify-result" aria-live="polite" hidden></div>
+            <label class="field verify-field" for="verify-pdf">
+              <span class="field-label">Check a PDF against a published SGNIA record</span>
+              <input id="verify-pdf" name="verify-pdf" type="file" accept=".pdf,application/pdf">
+            </label>
+            <p class="verify-footnote">Choose a published SGNIA record first. The PDF is hashed locally in your browser and is not uploaded. A match means the file bytes match the archived copy; it does not prove official Government authenticity.</p>
+            <div class="qr-scanner" id="qr-scanner">
+              <h4>Scan a document QR code</h4>
+              <p>Use your camera or upload an image of the QR code.</p>
+              <div class="qr-controls">
+                <button class="qr-button" id="qr-start" type="button">Start camera</button>
+                <button class="qr-button" id="qr-stop" type="button" disabled>Stop camera</button>
+                <label class="qr-upload-button" for="qr-image">Upload QR image</label>
+                <input class="visually-hidden" id="qr-image" type="file" accept="image/*">
+              </div>
+              <div class="qr-camera" id="qr-camera" hidden>
+                <video id="qr-video" playsinline muted></video>
+              </div>
+              <p class="qr-status" id="qr-status" aria-live="polite">Camera access is requested only when you press “Start camera”.</p>
+            </div>
+            <div class="verify-footnote"><span aria-hidden="true">ⓘ</span> SGNIA archive refs are project search IDs, not Government reference numbers. Official document refs are shown only when readable in the source PDF; this lookup does not verify a separate file.</div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Short feature summary and project footer. -->
+      <section class="trust-strip" id="about">
+        <div class="container trust-inner">
+          <div class="trust-item"><span class="trust-icon">⌕</span><span><strong>Easy to find</strong><small>Search with the details you know</small></span></div>
+          <div class="trust-item"><span class="trust-icon">▤</span><span><strong>Public archive</strong><small>Browse source listings and published SGNIA records</small></span></div>
+          <div class="trust-item"><span class="trust-icon">✓</span><span><strong>PDF documents</strong><small>Open a listing at its source or SGNIA archive</small></span></div>
+          <div class="trust-item"><span class="trust-icon">◷</span><span><strong>Historical access</strong><small>Filter listings by posted date</small></span></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <a class="footer-brand" href="#"><img class="footer-logo" src="assets/government-of-sindh-logo.png" alt=""><span><strong>SGNIA</strong><small>Sindh Government Notification Issuing Authority</small></span></a>
+        <p>University project prototype · Official source links</p>
+        <a class="back-top" href="#main-content">Back to top ↑</a>
+      </div>
+    </footer>
+
+  </body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Create notification draft{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><div class="eyebrow">NOTIFICATION WORKFLOW</div><h1>Create a draft</h1><p class="muted">Drafts are not published or publicly verifiable until reviewed and approved.</p></div></div>
+  <section class="panel form-panel"><form method="post" class="form-grid" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div class="field-group span-2">{{ form.title.label }}{{ form.title(placeholder="Enter a concise title") }}{% for error in form.title.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group">{{ form.category.label }}{{ form.category() }}</div>
+    <div class="field-group">{{ form.department.label }}{{ form.department() }}{% if current_user.role != 'super_admin' %}<small class="muted">This draft is restricted to your assigned department: {{ current_user.department }}. Ask a Super Admin to update your department if needed.</small>{% endif %}{% for error in form.department.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group span-2">{{ form.subject.label }}{{ form.subject(placeholder="Summarize the document subject") }}</div>
+    <div class="field-group">{{ form.document_date.label }}{{ form.document_date() }}{% for error in form.document_date.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group">{{ form.official_reference.label }}{{ form.official_reference(placeholder="Optional official file/reference number") }}</div>
+    <div class="field-group span-2">{{ form.body.label }}{{ form.body(rows="9", placeholder="Enter draft text. Verify the source document before submission.") }}</div>
+    <div class="field-group span-2">{{ form.document.label }}{{ form.document(accept=".pdf,application/pdf") }}<small class="muted">&#10003; <strong>Optional.</strong> If left blank, an official Sindh Government PDF will be auto-generated from your draft content above (with Sindh emblem, formatted heading, signatory block, and secure QR code). Upload a manually signed or externally prepared PDF to override auto-generation. PDF only, maximum 16 MB.</small>{% for error in form.document.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="form-actions span-2"><a class="button secondary" href="{{ url_for('staff.notifications') }}">Cancel</a>{{ form.submit(class_="button primary") }}</div>
+  </form></section>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Review extracted text{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><div class="eyebrow">HUMAN REVIEW REQUIRED</div><h1>Review extracted text</h1><p class="muted">Extraction method: {{ extraction_method }}. Compare every field and the text below with the original PDF.</p></div></div>
+  <form method="post" class="panel form-grid">
+    {{ form.hidden_tag() }}
+    <div class="field-group span-2">{{ form.title.label }}{{ form.title() }}{% for error in form.title.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group">{{ form.category.label }}{{ form.category() }}</div>
+    <div class="field-group">{{ form.department.label }}{{ form.department() }}</div>
+    <div class="field-group">{{ form.subject.label }}{{ form.subject() }}</div>
+    <div class="field-group">{{ form.document_date.label }}{{ form.document_date() }}</div>
+    <div class="field-group span-2">{{ form.official_reference.label }}{{ form.official_reference() }}</div>
+    <div class="field-group span-2">{{ form.body.label }}{{ form.body(rows="16") }}{% for error in form.body.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <label class="field-group span-2">{{ form.reviewed() }} {{ form.reviewed.label.text }}{% for error in form.reviewed.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    <div class="span-2">{{ form.submit(class="button primary") }}</div>
+  </form>
+{% endblock %}

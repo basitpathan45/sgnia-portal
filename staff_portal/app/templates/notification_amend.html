@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Create amendment{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><div class="eyebrow">VERSIONED WORKFLOW</div><h1>Create an amendment</h1><p class="muted">Amending {{ notification.reference }} creates a new version. The currently published PDF stays public until this amendment is approved and published.</p></div></div>
+  <section class="panel form-panel"><form method="post" class="form-grid" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div class="field-group span-2">{{ form.change_summary.label }}{{ form.change_summary(rows="3", placeholder="Describe what changed and why") }}{% for error in form.change_summary.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group span-2">{{ form.title.label }}{{ form.title() }}{% for error in form.title.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group">{{ form.category.label }}{{ form.category() }}</div>
+    <div class="field-group">{{ form.department.label }}{{ form.department() }}<small class="muted">The notification remains assigned to {{ notification.department }}.</small></div>
+    <div class="field-group span-2">{{ form.subject.label }}{{ form.subject() }}{% for error in form.subject.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group">{{ form.document_date.label }}{{ form.document_date() }}{% for error in form.document_date.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group">{{ form.official_reference.label }}{{ form.official_reference() }}{% for error in form.official_reference.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group span-2">{{ form.body.label }}{{ form.body(rows="9") }}{% for error in form.body.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group span-2">{{ form.document.label }}{{ form.document(accept=".pdf,application/pdf") }}<small class="muted">&#10003; <strong>Optional.</strong> If left blank, an official Sindh Government PDF will be auto-generated from the amended content (with Sindh emblem, formatted heading, signatory block, and secure QR code). Upload a manually signed PDF to override auto-generation. PDF only, maximum 16 MB.</small>{% for error in form.document.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="form-actions span-2"><a class="button secondary" href="{{ url_for('staff.versions', notification_id=notification.id) }}">Cancel</a>{{ form.submit(class_="button primary") }}</div>
+  </form></section>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Staff sign in{% endblock %}
+{% block public_content %}
+  <section class="login-card">
+    <a class="wordmark login-brand" href="{{ url_for('public.homepage') }}"><span class="mark">S</span><span>SGNIA<small>STAFF WORKSPACE</small></span></a>
+    <div class="eyebrow">SECURE STAFF ACCESS</div>
+    <h1>Sign in to your workspace</h1>
+    <p class="muted">Use the staff account provisioned for your department and role.</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endif %}
+    {% endwith %}
+    <form method="post" class="form-stack">
+      {{ form.hidden_tag() }}
+      <div class="field-group">{{ form.email.label }}{{ form.email(autocomplete="username", placeholder="name@department.gov.pk") }}{% for error in form.email.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+      <div class="field-group">{{ form.password.label }}{{ form.password(autocomplete="current-password", placeholder="Enter your password") }}{% for error in form.password.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+      {{ form.submit(class_="button primary full") }}
+    </form>
+    <p class="login-note">Accounts are created by the project administrator. There are no public demo passwords.</p>
+    <a class="login-back-link" href="{{ url_for('public.homepage') }}">← Return to public archive</a>
+  </section>
+{% endblock %}
