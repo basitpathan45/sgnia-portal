@@ -1,0 +1,14 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+staff_portal/instance/*.db
+test_*.pdf
+test_*.py
+scratch/
