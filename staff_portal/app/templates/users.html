@@ -11,5 +11,91 @@
     <div class="field-group span-2">{{ form.password.label }}{{ form.password(autocomplete="new-password") }}{% for error in form.password.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
     <div class="form-actions span-2">{{ form.submit(class_="button primary") }}</div>
   </form></section>
-  <section class="panel"><div class="panel-heading"><h2>Staff directory</h2></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Official email</th><th>Department</th><th>Role</th><th>Status</th><th>Created</th><th>Action</th></tr></thead><tbody>{% for user in users %}<tr><td>{{ user.name }}</td><td>{{ user.email }}</td><td><form method="post" action="{{ url_for('staff.update_user_department', user_id=user.id) }}" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><select name="department" aria-label="Department for {{ user.name }}">{% for department in departments %}<option value="{{ department }}" {% if department == user.department %}selected{% endif %}>{{ department }}</option>{% endfor %}</select><button class="text-button" type="submit">Save</button></form></td><td>{% if user.id != current_user.id %}<form method="post" action="{{ url_for('staff.update_user_role', user_id=user.id) }}" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><select name="role" aria-label="Role for {{ user.name }}">{% for role in roles %}<option value="{{ role }}" {% if role == user.role %}selected{% endif %}>{{ role.replace('_',' ')|title }}</option>{% endfor %}</select><button class="text-button" type="submit">Save</button></form>{% else %}{{ user.role_label }}{% endif %}</td><td>{{ 'Active' if user.active else 'Inactive' }}</td><td>{{ user.created_at.strftime('%d %b %Y') }}</td><td>{% if user.id != current_user.id %}<form method="post" action="{{ url_for('staff.toggle_user_active', user_id=user.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="text-button" type="submit">{{ 'Deactivate' if user.active else 'Activate' }}</button></form>{% else %}Current account{% endif %}</td></tr>{% else %}<tr><td colspan="7" class="empty-state">No staff accounts provisioned.</td></tr>{% endfor %}</tbody></table></div></section>
+  <section class="panel">
+    <div class="panel-heading">
+      <h2>Staff directory</h2>
+      <div style="margin-top:0.75rem;">
+        <input
+          type="search"
+          id="staff-search"
+          placeholder="Search by name, email, department or role…"
+          autocomplete="off"
+          style="width:100%;max-width:480px;padding:0.45rem 0.75rem;border:1px solid var(--border,#d1d5db);border-radius:6px;font-size:0.9rem;outline:none;"
+          oninput="filterStaff(this.value)"
+        >
+        <span id="staff-count" style="margin-left:0.75rem;font-size:0.85rem;color:var(--muted,#6b7280);"></span>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="staff-table">
+        <thead><tr><th>Name</th><th>Official email</th><th>Department</th><th>Role</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for user in users %}
+          <tr data-search="{{ (user.name ~ ' ' ~ user.email ~ ' ' ~ user.department ~ ' ' ~ user.role)|lower }}">
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              <form method="post" action="{{ url_for('staff.update_user_department', user_id=user.id) }}" class="inline-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="department" aria-label="Department for {{ user.name }}">
+                  {% for department in departments %}
+                  <option value="{{ department }}" {% if department == user.department %}selected{% endif %}>{{ department }}</option>
+                  {% endfor %}
+                </select>
+                <button class="text-button" type="submit">Save</button>
+              </form>
+            </td>
+            <td>
+              {% if user.id != current_user.id %}
+              <form method="post" action="{{ url_for('staff.update_user_role', user_id=user.id) }}" class="inline-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="role" aria-label="Role for {{ user.name }}">
+                  {% for role in roles %}
+                  <option value="{{ role }}" {% if role == user.role %}selected{% endif %}>{{ role.replace('_',' ')|title }}</option>
+                  {% endfor %}
+                </select>
+                <button class="text-button" type="submit">Save</button>
+              </form>
+              {% else %}{{ user.role_label }}{% endif %}
+            </td>
+            <td>{{ 'Active' if user.active else 'Inactive' }}</td>
+            <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              {% if user.id != current_user.id %}
+              <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                <form method="post" action="{{ url_for('staff.toggle_user_active', user_id=user.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="text-button" type="submit">{{ 'Deactivate' if user.active else 'Activate' }}</button>
+                </form>
+                <form method="post" action="{{ url_for('staff.delete_user', user_id=user.id) }}"
+                      onsubmit="return confirm('Delete {{ user.name }}? This cannot be undone.');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="text-button" type="submit" style="color:#dc2626;">Delete</button>
+                </form>
+              </div>
+              {% else %}Current account{% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="empty-state">No staff accounts provisioned.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    function filterStaff(query) {
+      const q = query.toLowerCase().trim();
+      const rows = document.querySelectorAll('#staff-table tbody tr[data-search]');
+      let visible = 0;
+      rows.forEach(row => {
+        const match = !q || row.dataset.search.includes(q);
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      const countEl = document.getElementById('staff-count');
+      if (countEl) countEl.textContent = q ? `${visible} result${visible !== 1 ? 's' : ''}` : '';
+    }
+  </script>
 {% endblock %}

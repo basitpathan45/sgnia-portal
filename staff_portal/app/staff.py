@@ -762,6 +762,47 @@ def users():
     )
 
 
+
+
+@staff_bp.post("/users/<int:user_id>/delete")
+@permission_required("manage_users")
+def delete_user(user_id):
+    """Permanently delete a staff account.
+
+    Guards:
+    - Cannot delete yourself.
+    - Nullifies created_by_id / reviewed_by_id on linked Notifications and
+      NotificationVersions so FK constraints are not violated.
+    - Sets actor_id = NULL on AuditLog rows so the audit chain is preserved.
+    """
+    user = db.session.get(User, user_id)
+    if user is None:
+        abort(404)
+    if user.id == current_user.id:
+        flash("You cannot delete your own account.", "danger")
+        return redirect(url_for("staff.users"))
+
+    # Nullify FK references so the delete succeeds and data integrity is kept.
+    Notification.query.filter_by(created_by_id=user.id).update({"created_by_id": None})
+    Notification.query.filter_by(reviewed_by_id=user.id).update({"reviewed_by_id": None})
+    NotificationVersion.query.filter_by(created_by_id=user.id).update({"created_by_id": None})
+    NotificationVersion.query.filter_by(reviewed_by_id=user.id).update({"reviewed_by_id": None})
+    AuditLog.query.filter_by(actor_id=user.id).update({"actor_id": None})
+
+    deleted_email = user.email
+    deleted_name = user.name
+    record_audit(
+        "staff_account_deleted",
+        "user",
+        user.id,
+        f"Staff account permanently deleted: {deleted_name} ({deleted_email}).",
+    )
+    db.session.delete(user)
+    db.session.commit()
+    flash(f"Staff account for {deleted_name} has been permanently deleted.", "success")
+    return redirect(url_for("staff.users"))
+
+
 @staff_bp.post("/users/<int:user_id>/toggle-active")
 @permission_required("manage_users")
 def toggle_user_active(user_id):
