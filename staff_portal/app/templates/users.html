@@ -1,45 +1,131 @@
 {% extends "base.html" %}
 {% block title %}Users{% endblock %}
 {% block content %}
-  <div class="page-heading"><div><div class="eyebrow">ADMINISTRATION</div><h1>Staff users</h1><p class="muted">Create accounts with one of the four roles in the approved RBAC matrix. Creators and Approvers must be assigned to the same department to share a notification workflow.</p></div></div>
-  <section class="panel form-panel"><div class="panel-heading"><div><h2>Create a staff account</h2><p class="muted">Passwords are stored as salted hashes and are never shown again.</p></div></div><form method="post" class="form-grid">
-    {{ form.hidden_tag() }}
-    <div class="field-group">{{ form.name.label }}{{ form.name(autocomplete="name") }}{% for error in form.name.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
-    <div class="field-group">{{ form.email.label }}{{ form.email(autocomplete="email") }}{% for error in form.email.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
-    <div class="field-group">{{ form.department.label }}{{ form.department() }}{% for error in form.department.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
-    <div class="field-group">{{ form.role.label }}{{ form.role() }}</div>
-    <div class="field-group span-2">{{ form.password.label }}{{ form.password(autocomplete="new-password") }}{% for error in form.password.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
-    <div class="form-actions span-2">{{ form.submit(class_="button primary") }}</div>
-  </form></section>
-  <section class="panel">
-    <div class="panel-heading">
-      <h2>Staff directory</h2>
-      <div style="margin-top:0.75rem;">
-        <input
-          type="search"
-          id="staff-search"
-          placeholder="Search by name, email, department or role…"
-          autocomplete="off"
-          style="width:100%;max-width:480px;padding:0.45rem 0.75rem;border:1px solid var(--border,#d1d5db);border-radius:6px;font-size:0.9rem;outline:none;"
-          oninput="filterStaff(this.value)"
-        >
-        <span id="staff-count" style="margin-left:0.75rem;font-size:0.85rem;color:var(--muted,#6b7280);"></span>
-      </div>
+
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">ADMINISTRATION</div>
+    <h1>Staff users</h1>
+    <p class="muted">Create accounts with one of the four roles in the approved RBAC matrix. Creators and Approvers must be assigned to the same department to share a notification workflow.</p>
+  </div>
+</div>
+
+{# ─── Create Account Form ─────────────────────────────────────────────────── #}
+<section class="panel form-panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Create a staff account</h2>
+      <p class="muted">Passwords are stored as salted hashes and are never shown again.</p>
     </div>
+  </div>
+  <form method="post" class="form-grid">
+    {{ form.hidden_tag() }}
+    <div class="field-group">
+      {{ form.name.label }}
+      {{ form.name(autocomplete="name") }}
+      {% for error in form.name.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    </div>
+    <div class="field-group">
+      {{ form.email.label }}
+      {{ form.email(autocomplete="email") }}
+      {% for error in form.email.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    </div>
+    <div class="field-group">
+      {{ form.department.label }}
+      {{ form.department() }}
+      {% for error in form.department.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    </div>
+    <div class="field-group">
+      {{ form.role.label }}
+      {{ form.role() }}
+    </div>
+    <div class="field-group span-2">
+      {{ form.password.label }}
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        {{ form.password(autocomplete="new-password", id="create-pwd-field", style="flex:1;") }}
+        <button type="button" class="text-button" style="white-space:nowrap;padding:0 0.5rem;"
+                onclick="togglePwd('create-pwd-field', this)">Show</button>
+      </div>
+      {% for error in form.password.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    </div>
+    <div class="form-actions span-2">{{ form.submit(class_="button primary") }}</div>
+  </form>
+</section>
+
+{# ─── Staff Directory with Role Tabs ─────────────────────────────────────── #}
+{% set roles_config = [
+  ('super_admin', 'Super Admin',  '#166534', '#dcfce7'),
+  ('approver',    'Approver',     '#1e40af', '#dbeafe'),
+  ('creator',     'Creator',      '#92400e', '#fef3c7'),
+  ('auditor',     'Auditor',      '#6b21a8', '#f3e8ff'),
+] %}
+
+<section class="panel">
+  <div class="panel-heading"><h2>Staff directory</h2></div>
+
+  {# Tab bar #}
+  <div style="display:flex;border-bottom:2px solid var(--border,#e5e7eb);padding:0 1.5rem;flex-wrap:wrap;gap:0;">
+    {% for role_key, role_label, color, bg in roles_config %}
+    {% set role_users = users | selectattr('role', 'equalto', role_key) | list %}
+    <button
+      id="tab-btn-{{ role_key }}"
+      onclick="switchTab('{{ role_key }}')"
+      style="padding:0.7rem 1.2rem;border:none;background:none;cursor:pointer;
+             font-weight:600;font-size:0.88rem;display:flex;align-items:center;gap:0.4rem;
+             border-bottom:3px solid {% if loop.first %}{{ color }}{% else %}transparent{% endif %};
+             color:{% if loop.first %}{{ color }}{% else %}var(--muted,#6b7280){% endif %};
+             margin-bottom:-2px;transition:all 0.15s;">
+      {{ role_label }}
+      <span id="badge-{{ role_key }}"
+            style="border-radius:999px;padding:0.1rem 0.55rem;font-size:0.72rem;font-weight:700;
+                   background:{% if loop.first %}{{ color }}{% else %}#e5e7eb{% endif %};
+                   color:{% if loop.first %}#fff{% else %}#374151{% endif %};">
+        {{ role_users | length }}
+      </span>
+    </button>
+    {% endfor %}
+  </div>
+
+  {# Tab contents #}
+  {% for role_key, role_label, color, bg in roles_config %}
+  {% set role_users = users | selectattr('role', 'equalto', role_key) | list %}
+  <div id="tab-{{ role_key }}" style="display:{% if loop.first %}block{% else %}none{% endif %};">
+    {# Per-tab search bar #}
+    <div style="padding:1rem 1.5rem 0;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+      <input
+        type="search"
+        placeholder="Search {{ role_label }}s by name, email or department…"
+        autocomplete="off"
+        oninput="filterTab(this, '{{ role_key }}')"
+        style="flex:1;max-width:440px;padding:0.45rem 0.75rem;
+               border:1px solid var(--border,#d1d5db);border-radius:6px;font-size:0.9rem;">
+      <span id="count-{{ role_key }}" style="font-size:0.82rem;color:var(--muted,#6b7280);"></span>
+    </div>
+
     <div class="table-wrap">
-      <table id="staff-table">
-        <thead><tr><th>Name</th><th>Official email</th><th>Department</th><th>Role</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+      <table id="table-{{ role_key }}">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Official email</th>
+            <th>Department</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody>
-          {% for user in users %}
-          <tr data-search="{{ (user.name ~ ' ' ~ user.email ~ ' ' ~ user.department ~ ' ' ~ user.role)|lower }}">
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
+          {% for user in role_users %}
+          <tr data-search="{{ (user.name ~ ' ' ~ user.email ~ ' ' ~ user.department) | lower }}">
+            <td style="font-weight:500;">{{ user.name }}</td>
+            <td style="font-size:0.88rem;">{{ user.email }}</td>
             <td>
               <form method="post" action="{{ url_for('staff.update_user_department', user_id=user.id) }}" class="inline-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <select name="department" aria-label="Department for {{ user.name }}">
-                  {% for department in departments %}
-                  <option value="{{ department }}" {% if department == user.department %}selected{% endif %}>{{ department }}</option>
+                  {% for dept in departments %}
+                  <option value="{{ dept }}" {% if dept == user.department %}selected{% endif %}>{{ dept }}</option>
                   {% endfor %}
                 </select>
                 <button class="text-button" type="submit">Save</button>
@@ -50,52 +136,200 @@
               <form method="post" action="{{ url_for('staff.update_user_role', user_id=user.id) }}" class="inline-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <select name="role" aria-label="Role for {{ user.name }}">
-                  {% for role in roles %}
-                  <option value="{{ role }}" {% if role == user.role %}selected{% endif %}>{{ role.replace('_',' ')|title }}</option>
+                  {% for r in roles %}
+                  <option value="{{ r }}" {% if r == user.role %}selected{% endif %}>{{ r.replace('_',' ') | title }}</option>
                   {% endfor %}
                 </select>
                 <button class="text-button" type="submit">Save</button>
               </form>
-              {% else %}{{ user.role_label }}{% endif %}
+              {% else %}
+              <span style="font-size:0.85rem;">{{ user.role_label }}</span>
+              {% endif %}
             </td>
-            <td>{{ 'Active' if user.active else 'Inactive' }}</td>
-            <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <span style="display:inline-block;padding:0.2rem 0.6rem;border-radius:999px;
+                           font-size:0.75rem;font-weight:600;
+                           background:{{ bg }};color:{{ color }};">
+                {{ 'Active' if user.active else 'Inactive' }}
+              </span>
+            </td>
+            <td style="font-size:0.82rem;color:var(--muted,#6b7280);white-space:nowrap;">
+              {{ user.created_at.strftime('%d %b %Y') }}
+            </td>
             <td>
               {% if user.id != current_user.id %}
-              <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+              <div style="display:flex;gap:0.35rem;flex-wrap:wrap;align-items:center;">
+                {# Edit Name #}
+                <button class="text-button" type="button"
+                        onclick="openEditName({{ user.id }}, '{{ user.name | e }}')">
+                  Edit name
+                </button>
+                <span style="color:var(--border,#d1d5db);">|</span>
+                {# Reset Password #}
+                <button class="text-button" type="button"
+                        onclick="openResetPwd({{ user.id }}, '{{ user.name | e }}')">
+                  Reset pwd
+                </button>
+                <span style="color:var(--border,#d1d5db);">|</span>
+                {# Activate / Deactivate #}
                 <form method="post" action="{{ url_for('staff.toggle_user_active', user_id=user.id) }}">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button class="text-button" type="submit">{{ 'Deactivate' if user.active else 'Activate' }}</button>
+                  <button class="text-button" type="submit">
+                    {{ 'Deactivate' if user.active else 'Activate' }}
+                  </button>
                 </form>
+                <span style="color:var(--border,#d1d5db);">|</span>
+                {# Delete #}
                 <form method="post" action="{{ url_for('staff.delete_user', user_id=user.id) }}"
-                      onsubmit="return confirm('Delete {{ user.name }}? This cannot be undone.');">
+                      onsubmit="return confirm('Permanently delete {{ user.name | e }}?\n\nThis action cannot be undone.');">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button class="text-button" type="submit" style="color:#dc2626;">Delete</button>
                 </form>
               </div>
-              {% else %}Current account{% endif %}
+              {% else %}
+              <span style="font-size:0.8rem;color:var(--muted,#6b7280);">Current account</span>
+              {% endif %}
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="7" class="empty-state">No staff accounts provisioned.</td></tr>
+          <tr><td colspan="7" class="empty-state">No {{ role_label }}s provisioned.</td></tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-  </section>
+  </div>
+  {% endfor %}
+</section>
 
-  <script>
-    function filterStaff(query) {
-      const q = query.toLowerCase().trim();
-      const rows = document.querySelectorAll('#staff-table tbody tr[data-search]');
-      let visible = 0;
-      rows.forEach(row => {
-        const match = !q || row.dataset.search.includes(q);
-        row.style.display = match ? '' : 'none';
-        if (match) visible++;
-      });
-      const countEl = document.getElementById('staff-count');
-      if (countEl) countEl.textContent = q ? `${visible} result${visible !== 1 ? 's' : ''}` : '';
+{# ─── Reset Password Modal ────────────────────────────────────────────────── #}
+<div id="modal-reset-pwd"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);
+            z-index:2000;align-items:center;justify-content:center;"
+     onclick="if(event.target===this) closeModal('modal-reset-pwd')">
+  <div style="background:#fff;border-radius:12px;padding:2rem;width:100%;max-width:420px;
+              box-shadow:0 20px 60px rgba(0,0,0,0.25);margin:1rem;">
+    <h3 style="margin:0 0 0.3rem;font-size:1.15rem;">Reset Password</h3>
+    <p id="reset-pwd-label" style="margin:0 0 1.25rem;font-size:0.88rem;color:var(--muted,#6b7280);"></p>
+    <form method="post" id="reset-pwd-form" action="">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field-group" style="margin-bottom:0.25rem;">
+        <label for="reset-pwd-input">New password (minimum 12 characters)</label>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <input type="password" name="new_password" id="reset-pwd-input"
+                 minlength="12" required autocomplete="new-password" style="flex:1;">
+          <button type="button" class="text-button" style="white-space:nowrap;padding:0 0.5rem;"
+                  onclick="togglePwd('reset-pwd-input', this)">Show</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.75rem;margin-top:1.5rem;">
+        <button type="submit" class="button primary">Reset Password</button>
+        <button type="button" class="button" onclick="closeModal('modal-reset-pwd')">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ─── Edit Name Modal ─────────────────────────────────────────────────────── #}
+<div id="modal-edit-name"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);
+            z-index:2000;align-items:center;justify-content:center;"
+     onclick="if(event.target===this) closeModal('modal-edit-name')">
+  <div style="background:#fff;border-radius:12px;padding:2rem;width:100%;max-width:420px;
+              box-shadow:0 20px 60px rgba(0,0,0,0.25);margin:1rem;">
+    <h3 style="margin:0 0 0.3rem;font-size:1.15rem;">Edit Staff Name</h3>
+    <p id="edit-name-label" style="margin:0 0 1.25rem;font-size:0.88rem;color:var(--muted,#6b7280);"></p>
+    <form method="post" id="edit-name-form" action="">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field-group" style="margin-bottom:0.25rem;">
+        <label for="edit-name-input">Full name</label>
+        <input type="text" name="name" id="edit-name-input" maxlength="120" required>
+      </div>
+      <div style="display:flex;gap:0.75rem;margin-top:1.5rem;">
+        <button type="submit" class="button primary">Save Name</button>
+        <button type="button" class="button" onclick="closeModal('modal-edit-name')">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ---- Role tab keys ---- */
+const ROLE_KEYS = ['super_admin', 'approver', 'creator', 'auditor'];
+const ROLE_COLORS = {
+  super_admin: '#166534',
+  approver:    '#1e40af',
+  creator:     '#92400e',
+  auditor:     '#6b21a8',
+};
+
+/* ---- Switch tab ---- */
+function switchTab(activeKey) {
+  ROLE_KEYS.forEach(key => {
+    const content = document.getElementById('tab-' + key);
+    const btn     = document.getElementById('tab-btn-' + key);
+    const badge   = document.getElementById('badge-' + key);
+    const isActive = (key === activeKey);
+    if (content) content.style.display = isActive ? 'block' : 'none';
+    if (btn) {
+      btn.style.borderBottomColor = isActive ? ROLE_COLORS[key] : 'transparent';
+      btn.style.color = isActive ? ROLE_COLORS[key] : 'var(--muted,#6b7280)';
     }
-  </script>
+    if (badge) {
+      badge.style.background = isActive ? ROLE_COLORS[key] : '#e5e7eb';
+      badge.style.color = isActive ? '#fff' : '#374151';
+    }
+  });
+}
+
+/* ---- Per-tab search filter ---- */
+function filterTab(input, key) {
+  const q    = input.value.toLowerCase().trim();
+  const rows = document.querySelectorAll('#table-' + key + ' tbody tr[data-search]');
+  let visible = 0;
+  rows.forEach(row => {
+    const match = !q || row.dataset.search.includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  const el = document.getElementById('count-' + key);
+  if (el) el.textContent = q ? visible + ' result' + (visible !== 1 ? 's' : '') : '';
+}
+
+/* ---- Password show / hide ---- */
+function togglePwd(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  const isHidden = inp.type === 'password';
+  inp.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? 'Hide' : 'Show';
+}
+
+/* ---- Modal helpers ---- */
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+/* ---- Open Reset Password modal ---- */
+function openResetPwd(userId, userName) {
+  document.getElementById('reset-pwd-label').textContent = 'Setting a new password for: ' + userName;
+  document.getElementById('reset-pwd-input').value = '';
+  document.getElementById('reset-pwd-input').type = 'password';
+  document.getElementById('reset-pwd-form').querySelector('[onclick]').textContent = 'Show';
+  document.getElementById('reset-pwd-form').action = '/users/' + userId + '/reset-password';
+  document.getElementById('modal-reset-pwd').style.display = 'flex';
+  setTimeout(() => document.getElementById('reset-pwd-input').focus(), 80);
+}
+
+/* ---- Open Edit Name modal ---- */
+function openEditName(userId, currentName) {
+  document.getElementById('edit-name-label').textContent = 'Currently: ' + currentName;
+  document.getElementById('edit-name-input').value = currentName;
+  document.getElementById('edit-name-form').action = '/users/' + userId + '/edit-name';
+  document.getElementById('modal-edit-name').style.display = 'flex';
+  setTimeout(() => {
+    const inp = document.getElementById('edit-name-input');
+    inp.focus();
+    inp.select();
+  }, 80);
+}
+</script>
 {% endblock %}

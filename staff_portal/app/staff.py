@@ -764,6 +764,64 @@ def users():
 
 
 
+
+
+@staff_bp.post("/users/<int:user_id>/reset-password")
+@permission_required("manage_users")
+def reset_user_password(user_id):
+    """Super Admin resets another staff member's password.
+
+    Guards:
+    - Cannot reset your own password here (use profile/login flow).
+    - New password must be at least 12 characters.
+    """
+    user = db.session.get(User, user_id)
+    if user is None:
+        abort(404)
+    if user.id == current_user.id:
+        flash("Use your account settings to change your own password.", "danger")
+        return redirect(url_for("staff.users"))
+    new_password = request.form.get("new_password", "").strip()
+    if len(new_password) < 12:
+        flash("Password must be at least 12 characters.", "danger")
+        return redirect(url_for("staff.users"))
+    user.set_password(new_password)
+    record_audit(
+        "staff_password_reset",
+        "user",
+        user.id,
+        f"Password reset for {user.email} by {current_user.email}.",
+    )
+    db.session.commit()
+    flash(f"Password successfully reset for {user.name}.", "success")
+    return redirect(url_for("staff.users"))
+
+
+@staff_bp.post("/users/<int:user_id>/edit-name")
+@permission_required("manage_users")
+def edit_user_name(user_id):
+    """Super Admin updates the display name of a staff account."""
+    user = db.session.get(User, user_id)
+    if user is None:
+        abort(404)
+    new_name = request.form.get("name", "").strip()
+    if not new_name or len(new_name) > 120:
+        flash("Please provide a valid name (max 120 characters).", "danger")
+        return redirect(url_for("staff.users"))
+    old_name = user.name
+    if new_name != old_name:
+        user.name = new_name
+        record_audit(
+            "staff_name_changed",
+            "user",
+            user.id,
+            f"Name changed: '{old_name}' -> '{new_name}' by {current_user.email}.",
+        )
+        db.session.commit()
+        flash(f"Name updated to '{new_name}'.", "success")
+    return redirect(url_for("staff.users"))
+
+
 @staff_bp.post("/users/<int:user_id>/delete")
 @permission_required("manage_users")
 def delete_user(user_id):
