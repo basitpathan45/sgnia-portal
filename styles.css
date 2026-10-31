@@ -424,3 +424,75 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 :root[data-theme="dark"] .verify-result button { color: #a9dfb7; }
 :root[data-theme="dark"] .theme-toggle-icon { color: #f2d28a; }
 :root[data-theme="dark"] .archive-total { color: #a8b8ae; }
+
+
+/* Professional Smartphone QR Verification Box */
+.qr-info-box {
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: rgba(11, 58, 50, 0.05);
+  border: 1px solid rgba(11, 58, 50, 0.15);
+  border-radius: 8px;
+}
+.qr-info-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.qr-info-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #0b3a32;
+}
+.qr-info-box p {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #4a5c52;
+}
+.qr-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.qr-step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  color: #213629;
+}
+.qr-step .step-num {
+  display: inline-flex;
+  width: 19px;
+  height: 19px;
+  align-items: center;
+  justify-content: center;
+  background: #0b3a32;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+:root[data-theme="dark"] .qr-info-box {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+:root[data-theme="dark"] .qr-info-badge {
+  color: #8ee0a4;
+}
+:root[data-theme="dark"] .qr-info-box p {
+  color: #a8b8ae;
+}
+:root[data-theme="dark"] .qr-step {
+  color: #dcece1;
+}
+:root[data-theme="dark"] .qr-step .step-num {
+  background: #2a6845;
+}

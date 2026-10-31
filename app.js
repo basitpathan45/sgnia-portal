@@ -367,7 +367,7 @@ async function scanCameraFrame() {
   }
 }
 
-qrStartButton.addEventListener("click", async () => {
+if (qrStartButton) qrStartButton.addEventListener("click", async () => {
   try {
     if (!window.isSecureContext) {
       throw new Error("Camera access requires localhost or an HTTPS website.");
@@ -397,10 +397,10 @@ qrStartButton.addEventListener("click", async () => {
   }
 });
 
-qrStopButton.addEventListener("click", () => stopQrCamera());
+if (qrStopButton) qrStopButton.addEventListener("click", () => stopQrCamera());
 
 // Decode a selected QR image using the same browser QR detector as the camera.
-qrImageInput.addEventListener("change", async () => {
+if (qrImageInput) qrImageInput.addEventListener("change", async () => {
   const [imageFile] = qrImageInput.files;
   if (!imageFile) return;
 

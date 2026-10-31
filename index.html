@@ -14,7 +14,6 @@
     <script src="records.js" defer></script>
     <script src="supabase-config.js" defer></script>
     <script src="public-records.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" integrity="sha384-hStSInNIZ8ljtOVrmrgf7zdHMapaLBWoSnPTtF0nzsybp4+LuhDz6sHuEVpWIX8o" crossorigin="anonymous" defer></script>
     <script src="app.js" defer></script>
   </head>
   <body>
@@ -186,19 +185,16 @@
               <input id="verify-pdf" name="verify-pdf" type="file" accept=".pdf,application/pdf">
             </label>
             <p class="verify-footnote">Choose a published SGNIA record first. The PDF is hashed locally in your browser and is not uploaded. A match means the file bytes match the archived copy; it does not prove official Government authenticity.</p>
-            <div class="qr-scanner" id="qr-scanner">
-              <h4>Scan a document QR code</h4>
-              <p>Use your camera or upload an image of the QR code.</p>
-              <div class="qr-controls">
-                <button class="qr-button" id="qr-start" type="button">Start camera</button>
-                <button class="qr-button" id="qr-stop" type="button" disabled>Stop camera</button>
-                <label class="qr-upload-button" for="qr-image">Upload QR image</label>
-                <input class="visually-hidden" id="qr-image" type="file" accept="image/*">
+            <div class="qr-info-box" id="qr-info-box">
+              <div class="qr-info-header">
+                <span class="qr-info-badge">📱 SMARTPHONE QR VERIFICATION</span>
               </div>
-              <div class="qr-camera" id="qr-camera" hidden>
-                <video id="qr-video" playsinline muted></video>
+              <p>Physical paper documents issued by Sindh Government authorities carry an encrypted QR code. Simply point your smartphone camera at the code on any printed notification to instantly verify its authenticity on this portal.</p>
+              <div class="qr-steps">
+                <div class="qr-step"><span class="step-num">1</span><span>Point phone camera at the QR code on the printed notification</span></div>
+                <div class="qr-step"><span class="step-num">2</span><span>Tap the official verification link that appears</span></div>
+                <div class="qr-step"><span class="step-num">3</span><span>Instantly verify the document authenticity and SHA-256 fingerprint</span></div>
               </div>
-              <p class="qr-status" id="qr-status" aria-live="polite">Camera access is requested only when you press “Start camera”.</p>
             </div>
             <div class="verify-footnote"><span aria-hidden="true">ⓘ</span> SGNIA archive refs are project search IDs, not Government reference numbers. Official document refs are shown only when readable in the source PDF; this lookup does not verify a separate file.</div>
           </form>
