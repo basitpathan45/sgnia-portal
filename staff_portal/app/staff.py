@@ -90,7 +90,7 @@ class OcrDraftForm(FlaskForm):
 class StaffUserForm(FlaskForm):
     name = StringField("Full name", validators=[DataRequired(), Length(max=120)])
     email = EmailField("Staff email", validators=[DataRequired(), Email(), Length(max=254)])
-    department = StringField("Department", validators=[DataRequired(), Length(max=160)])
+    department = SelectField("Department", validators=[DataRequired()])
     role = SelectField(
         "Role",
         choices=[
@@ -727,6 +727,13 @@ def departments():
 @permission_required("manage_users")
 def users():
     form = StaffUserForm()
+    users_list = User.query.order_by(User.name).all()
+    department_names = sorted(
+        {department.name for department in Department.query.filter_by(active=True).all()}
+        | {user.department for user in users_list if user.department}
+    )
+    form.department.choices = [(name, name) for name in department_names]
+
     if form.validate_on_submit():
         email = form.email.data.strip().lower()
         if User.query.filter_by(email=email).first():
@@ -745,14 +752,10 @@ def users():
             db.session.commit()
             flash("Staff account created. Share its initial password securely with the staff member.", "success")
             return redirect(url_for("staff.users"))
-    users = User.query.order_by(User.name).all()
-    department_names = sorted(
-        {department.name for department in Department.query.filter_by(active=True).all()}
-        | {user.department for user in users}
-    )
+
     return render_template(
         "users.html",
-        users=users,
+        users=users_list,
         roles=ROLE_PERMISSIONS,
         form=form,
         departments=department_names,
