@@ -10,7 +10,7 @@
     {% if current_user.is_authenticated %}
       <div class="workspace">
         <aside class="sidebar">
-          <a class="wordmark" href="{{ url_for('staff.dashboard') }}"><span class="mark">S</span><span>SGNIA<small>STAFF WORKSPACE</small></span></a>
+          <a class="wordmark" href="{{ url_for('staff.dashboard') }}"><img class="gov-logo" src="{{ url_for('static', filename='government-of-sindh-logo.png') }}" alt="Government of Sindh" width="38" height="44"><span>SGNIA<small>STAFF WORKSPACE</small></span></a>
           <div class="nav-label">WORKSPACE</div>
           <nav class="side-nav" aria-label="Staff workspace">
             {% if can('view_dashboard') %}<a href="{{ url_for('staff.dashboard') }}">▦ <span>Dashboard</span></a>{% endif %}
