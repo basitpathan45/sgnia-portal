@@ -1,14 +1,44 @@
 {% extends "base.html" %}
 {% block title %}OCR & document digitization{% endblock %}
 {% block content %}
-  <div class="page-heading"><div><div class="eyebrow">STAFF WORKSPACE</div><h1>OCR & document digitization</h1><p class="muted">Extract text locally, then review it before creating a draft.</p></div></div>
-  <p class="notice">{% if engine_available %}Local Tesseract OCR is available. Documents are processed on this server and are not sent to an external service.{% else %}Local Tesseract OCR is not installed. Text-based PDFs can still be extracted; scanned PDFs require a local Tesseract installation.{% endif %} Extraction is not proofread or an official transcription.</p>
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">STAFF WORKSPACE</div>
+      <h1>OCR & document digitization</h1>
+      <p class="muted">Extract text from official PDF documents, then review and edit before creating a draft notification.</p>
+    </div>
+  </div>
+
+  {# Engine Status Indicators #}
+  <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.25rem;padding:0.85rem 1.25rem;background:var(--white);border:1px solid var(--line);border-radius:8px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;"></span>
+      <strong style="font-size:0.82rem;">Digital PDF Extraction: Active & Ready</strong>
+    </div>
+    <span style="color:var(--line);">|</span>
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:{% if engine_available %}#22c55e{% else %}#f59e0b{% endif %};"></span>
+      <span style="font-size:0.8rem;color:var(--muted);">Image Scan OCR (Tesseract): {% if engine_available %}Available{% else %}Optional (Physical camera scans only){% endif %}</span>
+    </div>
+  </div>
+
   <section class="panel">
-    <h2>Upload a PDF for text extraction</h2>
-    <form method="post" enctype="multipart/form-data" class="form-grid">
+    <div class="panel-heading">
+      <div>
+        <h2>Upload a PDF for text extraction</h2>
+        <p class="muted">All standard digital / computer-generated government PDFs are extracted directly and instantly.</p>
+      </div>
+    </div>
+    <form method="post" enctype="multipart/form-data" class="form-grid" style="padding:1.5rem;">
       {{ form.hidden_tag() }}
-      <div class="field-group span-2">{{ form.document.label }}{{ form.document(accept=".pdf,application/pdf") }}{% for error in form.document.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
-      <div class="span-2">{{ form.submit(class="button primary") }}</div>
+      <div class="field-group span-2">
+        {{ form.document.label }}
+        {{ form.document(accept=".pdf,application/pdf") }}
+        {% for error in form.document.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+      </div>
+      <div class="span-2" style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
+        {{ form.submit(class="button primary", value="Extract text for review") }}
+      </div>
     </form>
   </section>
 {% endblock %}
