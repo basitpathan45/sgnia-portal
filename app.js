@@ -529,11 +529,14 @@ verificationPdfInput.addEventListener("change", async () => {
 
 // Set the total in the page and show the initial search results.
 const featuredTotal = document.querySelector("#total-records");
+const heroTotal = document.querySelector("#hero-total-records");
 if (featuredTotal) featuredTotal.textContent = records.length;
+if (heroTotal) heroTotal.textContent = records.length;
 populateDepartments();
 renderRecords();
 document.addEventListener("sgnia:public-records-loaded", () => {
   if (featuredTotal) featuredTotal.textContent = records.length;
+  if (heroTotal) heroTotal.textContent = records.length;
   populateDepartments();
   renderRecords();
   const initialReference = new URLSearchParams(window.location.search).get("verify");
