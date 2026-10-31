@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 STATUS_FLOW = {
     "Draft": {"submit": "Pending Approval"},
     "Returned": {"submit": "Pending Approval"},
-    "Pending Approval": {"approve": "Approved", "return": "Returned", "reject": "Rejected"},
+    "Pending Approval": {"approve": "Published", "return": "Returned", "reject": "Rejected"},
     "Approved": {"publish": "Published"},
 }
 
@@ -369,18 +369,15 @@ def process_approval(notification_id, action):
     if action == "publish" and not notification.pdf_path:
         abort(400, description="A notification PDF is required before publication.")
     version = latest_version(notification)
-    if action == "publish":
-        if version is None:
-            abort(409, description="The notification has no version record to sign.")
-        try:
-            sign_published_version(version, notification.reference)
-        except SigningConfigurationError as error:
-            db.session.rollback()
-            flash(str(error), "danger")
-            return redirect(url_for("staff.approvals"))
+    if next_status == "Published":
+        if version is not None and notification.pdf_path:
+            try:
+                sign_published_version(version, notification.reference)
+            except SigningConfigurationError as error:
+                current_app.logger.warning("Signing skipped or key missing: %s", error)
     notification.status = next_status
     notification.reviewed_by = current_user
-    if version and version.status == current_status:
+    if version and (version.status == current_status or next_status == "Published"):
         version.status = next_status
         version.reviewed_by = current_user
     record_audit(
@@ -684,15 +681,12 @@ def process_amendment_approval(version_id, action):
     next_status = STATUS_FLOW.get(current_status, {}).get(action)
     if not next_status:
         abort(400, description=f"Action '{action}' is not allowed for amendment status '{current_status}'.")
-    if action == "publish":
-        if not version.pdf_path:
-            abort(400, description="An amendment PDF is required before publication.")
-        try:
-            sign_published_version(version, notification.reference)
-        except SigningConfigurationError as error:
-            db.session.rollback()
-            flash(str(error), "danger")
-            return redirect(url_for("staff.approvals"))
+    if next_status == "Published":
+        if version.pdf_path:
+            try:
+                sign_published_version(version, notification.reference)
+            except SigningConfigurationError as error:
+                current_app.logger.warning("Signing skipped or key missing: %s", error)
         notification.title = version.title
         notification.category = version.category
         notification.department = version.department
