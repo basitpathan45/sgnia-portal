@@ -30,7 +30,16 @@
           <div class="sidebar-user"><span class="avatar">{{ current_user.name[:1]|upper }}</span><span class="user-id"><strong>{{ current_user.name }}</strong><small>{{ current_user.role_label }} · {{ current_user.department }}</small></span></div>
         </aside>
         <div class="main-shell">
-          <header class="topbar"><span class="breadcrumb">SGNIA <span>/</span> Staff workspace</span><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout" type="submit">Sign out</button></form></header>
+          <header class="topbar">
+            <span class="breadcrumb">SGNIA <span>/</span> Staff workspace</span>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button class="mode-toggle" id="mode-toggle-btn" onclick="toggleDarkMode()" title="Toggle day/night mode" type="button">
+                <span id="mode-icon">☀️</span>
+                <span id="mode-label">Day</span>
+              </button>
+              <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout" type="submit">Sign out</button></form>
+            </div>
+          </header>
           <main class="content">
             {% with messages = get_flashed_messages(with_categories=true) %}
               {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
@@ -43,5 +52,36 @@
     {% else %}
       <main class="login-shell">{% block public_content %}{% endblock %}</main>
     {% endif %}
+    <script>
+    /* ── Dark / Day mode toggle ─────────────────────────────────── */
+    (function initTheme() {
+      const saved = localStorage.getItem('sgnia-theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const useDark = saved === 'dark' || (!saved && prefersDark);
+      if (useDark) {
+        document.body.classList.add('dark');
+      }
+      updateToggleUI(useDark);
+    })();
+
+    function toggleDarkMode() {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('sgnia-theme', isDark ? 'dark' : 'light');
+      updateToggleUI(isDark);
+    }
+
+    function updateToggleUI(isDark) {
+      const icon  = document.getElementById('mode-icon');
+      const label = document.getElementById('mode-label');
+      if (!icon || !label) return;
+      if (isDark) {
+        icon.textContent  = '🌙';
+        label.textContent = 'Night';
+      } else {
+        icon.textContent  = '☀️';
+        label.textContent = 'Day';
+      }
+    }
+  </script>
   </body>
 </html>
