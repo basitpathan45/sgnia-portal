@@ -226,3 +226,17 @@ body.dark .mode-toggle {
   background: transparent;
 }
 body.dark .mode-toggle:hover { background: #1e2f26; }
+
+/* Status indicator dots */
+.dot-indicator {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.dot-ready {
+  background: #22c55e;
+}
+.dot-warning {
+  background: #f59e0b;
+}

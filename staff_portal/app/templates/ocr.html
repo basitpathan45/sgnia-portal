@@ -12,13 +12,18 @@
   {# Engine Status Indicators #}
   <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.25rem;padding:0.85rem 1.25rem;background:var(--white);border:1px solid var(--line);border-radius:8px;flex-wrap:wrap;">
     <div style="display:flex;align-items:center;gap:0.5rem;">
-      <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;"></span>
+      <span class="dot-indicator dot-ready"></span>
       <strong style="font-size:0.82rem;">Digital PDF Extraction: Active & Ready</strong>
     </div>
     <span style="color:var(--line);">|</span>
     <div style="display:flex;align-items:center;gap:0.5rem;">
-      <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:{% if engine_available %}#22c55e{% else %}#f59e0b{% endif %};"></span>
-      <span style="font-size:0.8rem;color:var(--muted);">Image Scan OCR (Tesseract): {% if engine_available %}Available{% else %}Optional (Physical camera scans only){% endif %}</span>
+      {% if engine_available %}
+        <span class="dot-indicator dot-ready"></span>
+        <span style="font-size:0.8rem;color:var(--muted);">Image Scan OCR (Tesseract): Available</span>
+      {% else %}
+        <span class="dot-indicator dot-warning"></span>
+        <span style="font-size:0.8rem;color:var(--muted);">Image Scan OCR (Tesseract): Optional (Physical camera scans only)</span>
+      {% endif %}
     </div>
   </div>
 
