@@ -23,13 +23,6 @@ def public_archive():
     return send_from_directory(PUBLIC_ROOT, "archive.html")
 
 
-@public_bp.get("/<path:filename>")
-def public_file(filename):
-    if filename not in PUBLIC_FILES:
-        abort(404)
-    return send_from_directory(PUBLIC_ROOT, filename)
-
-
 @public_bp.get("/assets/<path:filename>")
 def public_asset(filename):
     return send_from_directory(PUBLIC_ROOT / "assets", filename)
@@ -155,15 +148,23 @@ def notification_pdf(notification_id):
         notification_id=notification.id,
         status="Published",
     ).order_by(NotificationVersion.version_number.desc()).first()
-    pdf_path = version.pdf_path if version else notification.pdf_path
-    if not pdf_path:
-        abort(404)
+    from .pdf_generator import ensure_pdf_exists
+    pdf_filename = ensure_pdf_exists(notification, version)
     response = send_from_directory(
         current_app.config["NOTIFICATION_UPLOAD_DIR"],
-        pdf_path,
+        pdf_filename,
         mimetype="application/pdf",
         as_attachment=False,
         download_name=f"{notification.reference}.pdf",
     )
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
+
+
+@public_bp.get("/<path:filename>")
+def public_file(filename):
+    if filename.startswith("api/"):
+        abort(404)
+    if filename not in PUBLIC_FILES:
+        abort(404)
+    return send_from_directory(PUBLIC_ROOT, filename)

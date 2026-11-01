@@ -355,3 +355,63 @@ def generate_official_sindh_pdf(
             hasher.update(chunk)
     return hasher.hexdigest()
 
+
+def ensure_pdf_exists(notification, version=None):
+    """Ensure that the PDF file exists on the server filesystem.
+
+    If missing (e.g. after a Render container redeploy or ephemeral disk wipe),
+    this function regenerates the official Sindh Government PDF on the fly using
+    generate_official_sindh_pdf and saves it to NOTIFICATION_UPLOAD_DIR, guaranteeing
+    that no user ever encounters a 404 error when clicking 'View PDF' or 'Open archived PDF'.
+    """
+    import datetime
+    from uuid import uuid4
+    from flask import current_app, has_request_context, request
+    from .extensions import db
+
+    upload_dir = Path(current_app.config["NOTIFICATION_UPLOAD_DIR"])
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    source = version or notification
+    pdf_filename = getattr(source, "pdf_path", None) or getattr(notification, "pdf_path", None)
+
+    if not pdf_filename:
+        pdf_filename = f"{uuid4().hex}.pdf"
+        if version:
+            version.pdf_path = pdf_filename
+        notification.pdf_path = pdf_filename
+
+    target_file = upload_dir / pdf_filename
+
+    if not target_file.is_file():
+        doc_date = getattr(source, "document_date", None)
+        if not doc_date and getattr(notification, "created_at", None):
+            doc_date = notification.created_at.date()
+        if not doc_date:
+            doc_date = datetime.date.today()
+
+        host_url = request.host_url if has_request_context() else "https://sgnia-portal.onrender.com/"
+        new_sha256 = generate_official_sindh_pdf(
+            reference=notification.reference,
+            title=source.title or notification.title or "Official Notification",
+            category=source.category or notification.category or "Notification",
+            department=source.department or notification.department or "Government of Sindh",
+            subject=source.subject or source.title or "Official Notification",
+            body=source.body or "This official notification has been published in the digital gazette of the Government of Sindh.",
+            document_date=doc_date,
+            official_reference=source.official_reference or notification.official_reference,
+            destination_path=target_file,
+            host_url=host_url,
+        )
+        if version and not version.pdf_sha256:
+            version.pdf_sha256 = new_sha256
+        if not notification.pdf_sha256:
+            notification.pdf_sha256 = new_sha256
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+    return pdf_filename
+
+

@@ -292,12 +292,11 @@ def staff_notification_pdf(notification_id):
     if not can_view_notification_document(notification):
         abort(403)
     version = latest_version(notification)
-    pdf_path = version.pdf_path if version else notification.pdf_path
-    if not pdf_path:
-        abort(404)
+    from .pdf_generator import ensure_pdf_exists
+    pdf_filename = ensure_pdf_exists(notification, version)
     response = send_from_directory(
         current_app.config["NOTIFICATION_UPLOAD_DIR"],
-        pdf_path,
+        pdf_filename,
         mimetype="application/pdf",
         as_attachment=False,
         download_name=f"{notification.reference}.pdf",
@@ -627,11 +626,11 @@ def staff_version_pdf(notification_id, version_id):
         abort(404)
     if not can_view_notification_document(notification):
         abort(403)
-    if not version.pdf_path:
-        abort(404)
+    from .pdf_generator import ensure_pdf_exists
+    pdf_filename = ensure_pdf_exists(notification, version)
     response = send_from_directory(
         current_app.config["NOTIFICATION_UPLOAD_DIR"],
-        version.pdf_path,
+        pdf_filename,
         mimetype="application/pdf",
         as_attachment=False,
         download_name=f"{notification.reference}-v{version.version_number}.pdf",
