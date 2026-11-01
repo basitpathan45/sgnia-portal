@@ -128,7 +128,10 @@ def notification_qr(notification_id):
     )
     image = qrcode.make(verification_url)
     output = BytesIO()
-    image.save(output, format="PNG")
+    try:
+        image.save(output, format="PNG")
+    except TypeError:
+        image.save(output)
     output.seek(0)
     return send_file(
         output,

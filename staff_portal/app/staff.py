@@ -15,7 +15,7 @@ from .extensions import db
 from .audit import append_audit_log, verify_audit_chain
 from .documents import sha256_file
 from .models import AuditLog, Department, Notification, NotificationVersion, SigningKey, User
-from .ocr import OcrError, extract_pdf_text, ocr_engine_available
+from .ocr import OcrError, extract_pdf_text, extract_document_text, ocr_engine_available
 from .permissions import (
     APPROVER,
     AUDITOR,
@@ -63,9 +63,12 @@ class AmendmentForm(NotificationForm):
 
 
 class OcrUploadForm(FlaskForm):
-    document = FileField("Scanned or text PDF", validators=[
+    document = FileField("Scanned PDF or Image (PDF, PNG, JPG, JPEG, WEBP, TIFF)", validators=[
         FileRequired(),
-        FileAllowed(["pdf"], "Upload a PDF document."),
+        FileAllowed(
+            ["pdf", "png", "jpg", "jpeg", "webp", "tiff", "tif", "bmp"],
+            "Upload a PDF or image file (PDF, PNG, JPG, JPEG, WEBP, TIFF, BMP)."
+        ),
     ])
     submit = SubmitField("Extract text for review")
 
@@ -401,14 +404,17 @@ def ocr():
         if pdf_size > current_app.config["MAX_NOTIFICATION_PDF_BYTES"]:
             flash("The PDF must be no larger than 16 MB.", "danger")
             return render_template("ocr.html", engine_available=ocr_engine_available(), form=form)
-        pdf_bytes = uploaded_pdf.stream.read()
-        if not pdf_bytes.startswith(b"%PDF-"):
-            flash("The uploaded file does not appear to be a valid PDF.", "danger")
-            return render_template("ocr.html", engine_available=ocr_engine_available(), form=form)
+        file_bytes = uploaded_pdf.stream.read()
         try:
-            extracted_text, extraction_method = extract_pdf_text(pdf_bytes)
+            extracted_text, extraction_method, pdf_bytes = extract_document_text(
+                file_bytes, filename=uploaded_pdf.filename
+            )
         except OcrError as error:
             flash(str(error), "danger")
+            return render_template("ocr.html", engine_available=ocr_engine_available(), form=form)
+        except Exception as error:
+            current_app.logger.exception("OCR extraction failed: %s", error)
+            flash(f"Could not process this file: {error}", "danger")
             return render_template("ocr.html", engine_available=ocr_engine_available(), form=form)
         token = uuid4().hex
         pending_directory = Path(current_app.instance_path) / "pending-ocr"
@@ -422,6 +428,8 @@ def ocr():
         (pending_directory / f"{token}.pdf").write_bytes(pdf_bytes)
         (pending_directory / f"{token}.txt").write_text(extracted_text, encoding="utf-8")
         (pending_directory / f"{token}.method").write_text(extraction_method, encoding="utf-8")
+        if not extracted_text:
+            flash("Document uploaded successfully. Please review the document preview and enter the notification details.", "info")
         return redirect(url_for("staff.ocr_review", token=token))
     return render_template("ocr.html", engine_available=ocr_engine_available(), form=form)
 

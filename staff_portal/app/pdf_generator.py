@@ -296,7 +296,11 @@ def generate_official_sindh_pdf(
     qr_img = qr.make_image(fill_color="#0b3a32", back_color="white")
 
     qr_bytes = BytesIO()
-    qr_img.save(qr_bytes, format="PNG")
+    try:
+        qr_img.save(qr_bytes, format="PNG")
+    except TypeError:
+        # qrcode.image.pure.PyPNGImage does not accept the 'format' keyword
+        qr_img.save(qr_bytes)
 
     qr_top = _PAGE_H - 180
     qr_rect = pymupdf.Rect(_MARGIN_L, qr_top, _MARGIN_L + 75, qr_top + 75)

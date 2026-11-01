@@ -30,15 +30,15 @@
   <section class="panel">
     <div class="panel-heading">
       <div>
-        <h2>Upload a PDF for text extraction</h2>
-        <p class="muted">All standard digital / computer-generated government PDFs are extracted directly and instantly.</p>
+        <h2>Upload a document or scanned image for text extraction</h2>
+        <p class="muted">Digital PDFs, scanned documents, and image files (PDF, PNG, JPG, JPEG, WEBP, TIFF) are all supported.</p>
       </div>
     </div>
     <form method="post" enctype="multipart/form-data" class="form-grid" style="padding:1.5rem;">
       {{ form.hidden_tag() }}
       <div class="field-group span-2">
         {{ form.document.label }}
-        {{ form.document(accept=".pdf,application/pdf") }}
+        {{ form.document(accept=".pdf,application/pdf,image/png,image/jpeg,image/webp,image/tiff,image/bmp") }}
         {% for error in form.document.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
       </div>
       <div class="span-2" style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
