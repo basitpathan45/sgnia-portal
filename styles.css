@@ -208,8 +208,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .verify-footnote span { margin-right: 4px; color: #62806b; }
 /* ── Document Verification & Integrity Redesign ─────────────────────── */
 .verify-result { margin-top: 14px; padding: 14px; border: 1.5px solid #a3cfb0; border-radius: 8px; background: #f5fbf6; color: #1f3b28; font-size: 11px; line-height: 1.5; box-shadow: 0 4px 16px rgba(11, 58, 50, 0.06); }
-.verify-result.not-found { color: #842018; border-color: #f1b5af; background: #fff6f5; padding: 14px; border-radius: 8px; }
-.verify-result.not-found strong { color: #b71c1c; font-size: 12px; margin-bottom: 4px; }
+.verify-result.not-found { color: #842018; border-color: #f1b5af; background: #fff6f5; padding: 12px 14px; border-radius: 8px; }
+.verify-not-found-banner { display: flex; align-items: flex-start; gap: 11px; }
+.not-found-badge { width: 30px; height: 30px; border-radius: 50%; background: #d93025; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.15); }
+.not-found-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.not-found-title { color: #b71c1c; font-size: 13px; font-weight: 800; display: block; }
+.not-found-message { margin: 0; font-size: 11px; color: #5a1a14; line-height: 1.45; }
+.not-found-message code { background: #fde8e5; border: 1px solid #f5c4be; border-radius: 3px; padding: 1px 4px; font-size: 10px; font-weight: 700; color: #a51d14; }
+.not-found-guide { margin-top: 6px; padding-top: 7px; border-top: 1px dashed #f5c4be; font-size: 10px; color: #6e241d; line-height: 1.45; }
+.not-found-guide ul { margin: 4px 0 0; padding-left: 17px; }
+.not-found-guide li { margin-bottom: 2px; }
+.not-found-guide code { background: #fde8e5; padding: 1px 4px; border-radius: 3px; font-size: 9.5px; }
 .verify-result button { margin-top: 5px; padding: 0; color: #1b6338; background: transparent; border: 0; cursor: pointer; font-size: 10px; font-weight: 700; text-decoration: underline; }
 
 /* Record Header & Badges */
@@ -490,7 +499,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 :root[data-theme="dark"] .qr-upload-button:hover { background: #314a38; }
 /* Dark mode overrides for document verification */
 :root[data-theme="dark"] .verify-result { color: #cbe6d2; background: #12281d; border-color: #2d5a3e; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); }
-:root[data-theme="dark"] .verify-result.not-found { color: #ffc4be; background: #2f1917; border-color: #702f2b; }
+:root[data-theme="dark"] .verify-result.not-found { color: #ffc4be; background: #2a1514; border-color: #632622; }
+:root[data-theme="dark"] .not-found-title { color: #ff8e85; }
+:root[data-theme="dark"] .not-found-message { color: #f0cfcb; }
+:root[data-theme="dark"] .not-found-message code { background: #3d1b19; border-color: #632622; color: #ff9b91; }
+:root[data-theme="dark"] .not-found-guide { border-top-color: #4f211e; color: #deb1ac; }
+:root[data-theme="dark"] .not-found-guide code { background: #3d1b19; color: #ff9b91; }
 :root[data-theme="dark"] .verify-record-badge { background: #1b3d2b; border-color: #316b47; color: #7fe6a4; }
 :root[data-theme="dark"] .verify-record-date { color: #8cb59a; }
 :root[data-theme="dark"] .verify-record-title { color: #e4f5ea; }

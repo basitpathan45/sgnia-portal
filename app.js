@@ -216,7 +216,7 @@ let selectedVerificationRecord = null;
 
 function showVerifiedRecord(record) {
   selectedVerificationRecord = record;
-  verifyReferenceInput.value = record.archiveReference;
+  if (!verifyReferenceInput.value) { verifyReferenceInput.value = record.archiveReference; }
   verifyResult.hidden = false;
   verifyResult.classList.remove("not-found");
 
@@ -498,23 +498,108 @@ document.querySelector("#empty-clear").addEventListener("click", () => {
   renderRecords();
 });
 
-function findArchiveRecord(reference) {
-  const normalizedReference = reference.trim().toLocaleLowerCase();
-  return records.find((item) => String(item.portalListingNumber).toLocaleLowerCase() === normalizedReference
-    || item.archiveReference.toLocaleLowerCase() === normalizedReference
-    || Boolean(item.officialReference && item.officialReference.toLocaleLowerCase().includes(normalizedReference))
-    || item.title.toLocaleLowerCase().includes(normalizedReference)
-    || item.pdfUrl.toLocaleLowerCase().includes(normalizedReference));
+function findArchiveRecord(query) {
+  const trimmed = String(query || "").trim();
+  const q = trimmed.toLocaleLowerCase();
+
+  // 1. Minimum query length check
+  if (!q || q.length < 3) {
+    return null;
+  }
+
+  // 2. Reject pure numbers (e.g. "1", "2", "3", "8", "23", "24", "25", "31")
+  // In document verification, a naked number is NOT a valid archive or official reference.
+  if (/^\d+$/.test(q)) {
+    return null;
+  }
+
+  // Also reject strings that are just hash/number prefixes and digits like "#23", "no. 23", "listing 23"
+  if (/^(#|no\.?\s*|listing\s*)?\d+$/i.test(q)) {
+    return null;
+  }
+
+  // 3. Exact match on Archive Reference (e.g., "SGNIA-2026-DFEE90F8", "SGNIA-ARCH-031")
+  let found = records.find((item) => 
+    item.archiveReference && item.archiveReference.toLocaleLowerCase() === q
+  );
+  if (found) return found;
+
+  // 4. Exact match on Project ID (e.g., "SGNIA-56", "GOS-PORTAL-031")
+  found = records.find((item) => 
+    item.id && item.id.toLocaleLowerCase() === q
+  );
+  if (found) return found;
+
+  // 5. Official Reference match (e.g. "SOVI(SGA&CD)4(24)/2026", "SO(T)/HD/9-2/2026", "DG-II/CERT/4/124/2023/P-I")
+  // First try exact match
+  found = records.find((item) => 
+    item.officialReference && item.officialReference.toLocaleLowerCase() === q
+  );
+  if (found) return found;
+
+  // Next try substring on officialReference ONLY if query has at least 5 chars AND contains letters
+  if (q.length >= 5 && /[a-z]/i.test(q)) {
+    found = records.find((item) => 
+      item.officialReference && item.officialReference.toLocaleLowerCase().includes(q)
+    );
+    if (found) return found;
+  }
+
+  // 6. Title match
+  // Exact match on Title
+  found = records.find((item) => 
+    item.title && item.title.toLocaleLowerCase() === q
+  );
+  if (found) return found;
+
+  // Substring match on Title ONLY if query is at least 6 characters long and has real words (at least 3 letters in a row)
+  if (q.length >= 6 && /[a-z]{3,}/i.test(q)) {
+    found = records.find((item) => 
+      item.title && item.title.toLocaleLowerCase().includes(q)
+    );
+    if (found) return found;
+  }
+
+  // Note: We deliberately do NOT match against item.pdfUrl or naked portalListingNumber
+  return null;
 }
 
 function lookupArchiveRecord(reference) {
   selectedVerificationRecord = null;
-  const record = findArchiveRecord(reference);
+  const rawInput = String(reference || "").trim();
+  const record = findArchiveRecord(rawInput);
   verifyResult.hidden = false;
   verifyResult.classList.toggle("not-found", !record);
 
   if (!record) {
-    verifyResult.innerHTML = "<strong>No matching archive record</strong>Try a portal listing number, SGNIA reference, official reference, or phrase from the document title. Not finding a record does not establish whether a document is genuine or false.";
+    const isPureNumber = /^\d+$/.test(rawInput) || /^(#|no\.?\s*|listing\s*)?\d+$/i.test(rawInput);
+    const isTooShort = rawInput.length < 3;
+
+    verifyResult.innerHTML = `
+      <div class="verify-not-found-banner">
+        <div class="not-found-badge" aria-hidden="true">✕</div>
+        <div class="not-found-body">
+          <strong class="not-found-title">Document Record Not Found</strong>
+          <p class="not-found-message">
+            ${isPureNumber ? `
+              Aap ne sirf number <code>${escapeHtml(rawInput)}</code> darj kiya hai. Plain numbers se document verify <strong>nahi ho sakta</strong>.
+            ` : isTooShort ? `
+              Search query bohot choti hai (${escapeHtml(rawInput)}). Barah-e-karam kam az kam 3 characters darj karein.
+            ` : `
+              <code>${escapeHtml(rawInput)}</code> se koi official notification record match nahi hua.
+            `}
+          </p>
+          <div class="not-found-guide">
+            <span>Barah-e-karam notification par darj in mein se koi ek maloomat darj karein:</span>
+            <ul>
+              <li><strong>Archive Reference:</strong> Maslan <code>SGNIA-2026-0FD1FA7E</code> ya <code>SGNIA-ARCH-031</code></li>
+              <li><strong>Official Reference:</strong> Maslan <code>SO(T)/HD/9-2/2026</code> ya <code>SOVI(SGA&CD)</code></li>
+              <li><strong>Document Title:</strong> Maslan <em>Imposition of Section 144</em></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    `;
     return;
   }
 
