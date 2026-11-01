@@ -220,17 +220,60 @@ function showVerifiedRecord(record) {
   verifyResult.hidden = false;
   verifyResult.classList.remove("not-found");
 
-  const officialReference = record.officialReference
-    ? `<br>Official document reference: ${escapeHtml(record.officialReference)}`
-    : "";
-  const recordSource = record.isSgniaRecord ? "SGNIA archive record" : "Government of Sindh portal listing";
-  const documentLink = record.isSgniaRecord ? "Open the archived PDF" : "Open the PDF on the official Government of Sindh website";
+  const recordSource = record.isSgniaRecord ? "Official SGNIA Record" : "Govt of Sindh Portal Listing";
+  const documentLink = record.isSgniaRecord ? "Open Archived PDF Document" : "Open PDF on Official Sindh Govt Portal";
+  const formattedDate = formatDate(record.date, { day: "numeric", month: "short", year: "numeric" });
+
   const integrityCheck = record.isSgniaRecord && record.pdfSha256
-    ? `<div class="pdf-integrity"><strong>Published PDF SHA-256</strong><code>${escapeHtml(record.pdfSha256)}</code><p id="pdf-integrity-result" aria-live="polite">Choose a PDF above to compare it with this archived copy.</p></div>`
+    ? `<div class="pdf-integrity">
+        <div class="integrity-waiting" id="pdf-integrity-result" aria-live="polite">
+          <div class="integrity-waiting-icon">🔍</div>
+          <div class="integrity-waiting-text">
+            <strong>Awaiting PDF Upload for Verification</strong>
+            <span>Choose your local PDF file below to verify if it is 100% Genuine or Tampered.</span>
+          </div>
+        </div>
+        <details class="sha-technical-details" id="sha-details-accordion">
+          <summary>Technical Details & SHA-256 Fingerprint</summary>
+          <div class="sha-detail-block">
+            <span class="sha-detail-label">Official Stored Fingerprint:</span>
+            <code class="sha-hash-code">${escapeHtml(record.pdfSha256)}</code>
+            <p class="sha-note">Verified locally in your browser using WebCrypto SHA-256. Zero data uploaded to servers.</p>
+          </div>
+        </details>
+      </div>`
     : record.isSgniaRecord
-      ? `<p>This record has no stored file fingerprint. Re-run the database migration; if the original PDF file is missing, upload a new reviewed version to enable comparison.</p>`
+      ? `<div class="pdf-integrity"><p class="sha-note">Fingerprint verification is pending for this record.</p></div>`
       : "";
-  verifyResult.innerHTML = `<strong>${recordSource} found</strong>${escapeHtml(record.title)} · ${escapeHtml(record.shortDepartment)} · ${escapeHtml(formatDate(record.date, { day: "numeric", month: "short", year: "numeric" }))}<br>SGNIA archive reference: ${escapeHtml(record.archiveReference)}${officialReference}<br><a href="${escapeHtml(record.pdfUrl)}" target="_blank" rel="noopener noreferrer">${documentLink} ↗</a>${integrityCheck}<br>This lookup finds a listed record; a matching hash confirms byte-for-byte equality with this stored copy, not official Government authenticity.`;
+
+  verifyResult.innerHTML = `
+    <div class="verify-record-header">
+      <span class="verify-record-badge"><span class="badge-dot"></span> ${escapeHtml(recordSource)}</span>
+      <span class="verify-record-date">${escapeHtml(formattedDate)}</span>
+    </div>
+    <h4 class="verify-record-title">${escapeHtml(record.title)}</h4>
+    <div class="verify-record-grid">
+      <div class="verify-meta-cell">
+        <span class="verify-meta-label">Department</span>
+        <span class="verify-meta-val">${escapeHtml(record.shortDepartment)}</span>
+      </div>
+      <div class="verify-meta-cell">
+        <span class="verify-meta-label">Archive Reference</span>
+        <span class="verify-meta-val font-mono">${escapeHtml(record.archiveReference)}</span>
+      </div>
+      ${record.officialReference ? `
+      <div class="verify-meta-cell full-width">
+        <span class="verify-meta-label">Official Document Ref</span>
+        <span class="verify-meta-val font-mono">${escapeHtml(record.officialReference)}</span>
+      </div>` : ""}
+    </div>
+    <div class="verify-record-action">
+      <a class="verify-pdf-btn" href="${escapeHtml(record.pdfUrl)}" target="_blank" rel="noopener noreferrer">
+        <span aria-hidden="true">📄</span> ${escapeHtml(documentLink)} ↗
+      </a>
+    </div>
+    ${integrityCheck}
+  `;
 }
 
 // Request camera permission only after the visitor presses the start button.
@@ -504,11 +547,24 @@ verificationPdfInput.addEventListener("change", async () => {
     return;
   }
 
-  result.textContent = "Calculating SHA-256 locally…";
+  result.className = "integrity-waiting integrity-calculating";
+  result.innerHTML = `
+    <div class="integrity-spinner"></div>
+    <div class="integrity-waiting-text">
+      <strong>Checking Document Authenticity...</strong>
+      <span>Calculating cryptographic SHA-256 fingerprint locally in browser.</span>
+    </div>`;
+
   try {
     const header = new Uint8Array(await file.slice(0, 5).arrayBuffer());
     if (new TextDecoder().decode(header) !== "%PDF-") {
-      result.textContent = "The selected file does not appear to be a PDF.";
+      result.className = "integrity-banner integrity-fake";
+      result.innerHTML = `
+        <div class="integrity-banner-icon">✕</div>
+        <div class="integrity-banner-body">
+          <strong>INVALID FILE FORMAT</strong>
+          <span>The selected file is not a valid PDF document.</span>
+        </div>`;
       return;
     }
     if (!window.crypto?.subtle) {
@@ -517,13 +573,68 @@ verificationPdfInput.addEventListener("change", async () => {
     const bytes = await file.arrayBuffer();
     const digest = await window.crypto.subtle.digest("SHA-256", bytes);
     const actualHash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-    result.textContent = actualHash === selectedVerificationRecord.pdfSha256
-      ? "MATCH — this file is byte-for-byte identical to the published SGNIA archive copy."
-      : "NO MATCH — this file differs from the published SGNIA archive copy.";
-    result.classList.toggle("integrity-match", actualHash === selectedVerificationRecord.pdfSha256);
-    result.classList.toggle("integrity-mismatch", actualHash !== selectedVerificationRecord.pdfSha256);
+    const isMatch = actualHash === selectedVerificationRecord.pdfSha256;
+
+    if (isMatch) {
+      result.className = "integrity-banner integrity-verified";
+      result.innerHTML = `
+        <div class="integrity-badge-indicator green-pulse">
+          <span class="indicator-icon">✓</span>
+        </div>
+        <div class="integrity-banner-body">
+          <div class="status-headline status-headline-green">
+            <span class="status-tag status-tag-green">ORIGINAL DOCUMENT</span>
+            <strong>AUTHENTICATED & VERIFIED</strong>
+          </div>
+          <p class="status-description">
+            Yeh document <strong>100% Asli (Genuine)</strong> hai. Sindh Government ke official published record ke sath byte-for-byte match karta hai. Is document mein koi tabdeeli ya tampering nahi ki gayi.
+          </p>
+        </div>`;
+    } else {
+      result.className = "integrity-banner integrity-fake";
+      result.innerHTML = `
+        <div class="integrity-badge-indicator red-pulse">
+          <span class="indicator-icon">✕</span>
+        </div>
+        <div class="integrity-banner-body">
+          <div class="status-headline status-headline-red">
+            <span class="status-tag status-tag-red">FAKE / TAMPERED</span>
+            <strong>VERIFICATION FAILED</strong>
+          </div>
+          <p class="status-description">
+            <strong>Khabardar!</strong> Yeh document official record se match <strong>nahin karta</strong>. Is file mein tabdeeli (tampering) ki gayi hai ya yeh nakli/unauthorized copy hai.
+          </p>
+        </div>`;
+    }
+
+    // Update details accordion if present
+    const detailsAccordion = document.querySelector("#sha-details-accordion");
+    if (detailsAccordion) {
+      detailsAccordion.innerHTML = `
+        <summary>Technical Verification Details (SHA-256)</summary>
+        <div class="sha-detail-block">
+          <div class="sha-row">
+            <span class="sha-row-label">Official Record Hash:</span>
+            <code class="sha-hash-code font-mono">${escapeHtml(selectedVerificationRecord.pdfSha256)}</code>
+          </div>
+          <div class="sha-row">
+            <span class="sha-row-label">Uploaded File Hash:</span>
+            <code class="sha-hash-code font-mono ${isMatch ? "hash-match-green" : "hash-mismatch-red"}">${escapeHtml(actualHash)}</code>
+          </div>
+          <div class="sha-row-status">
+            <span>Result:</span> <strong>${isMatch ? "✓ Byte-for-byte match confirmed" : "✕ Hash mismatch detected"}</strong>
+          </div>
+        </div>`;
+      detailsAccordion.open = true;
+    }
   } catch (error) {
-    result.textContent = `Could not compare this PDF: ${error.message}`;
+    result.className = "integrity-banner integrity-fake";
+    result.innerHTML = `
+      <div class="integrity-banner-icon">!</div>
+      <div class="integrity-banner-body">
+        <strong>Verification Error</strong>
+        <span>Could not complete check: ${escapeHtml(error.message)}</span>
+      </div>`;
   }
 });
 

@@ -180,11 +180,17 @@
             </label>
             <button class="verify-button" type="submit">Find record <span aria-hidden="true">→</span></button>
             <div id="verify-result" class="verify-result" aria-live="polite" hidden></div>
-            <label class="field verify-field" for="verify-pdf">
-              <span class="field-label">Check a PDF against a published SGNIA record</span>
-              <input id="verify-pdf" name="verify-pdf" type="file" accept=".pdf,application/pdf">
-            </label>
-            <p class="verify-footnote">Choose a published SGNIA record first. The PDF is hashed locally in your browser and is not uploaded. A match means the file bytes match the archived copy; it does not prove official Government authenticity.</p>
+            <div class="verify-upload-section">
+              <label class="field verify-field verify-upload-label" for="verify-pdf">
+                <span class="field-label">📄 Document Authenticity Verification (PDF)</span>
+                <span class="field-sublabel">Select a downloaded or received notification PDF to check if it is genuine or fake:</span>
+                <input id="verify-pdf" name="verify-pdf" type="file" accept=".pdf,application/pdf">
+              </label>
+              <p class="verify-security-note">
+                <span class="security-badge-icon" aria-hidden="true">🔒</span>
+                <span><strong>Secure Local Verification:</strong> Document is verified directly inside your browser. No files are uploaded to any server.</span>
+              </p>
+            </div>
             <div class="qr-info-box" id="qr-info-box">
               <div class="qr-info-header">
                 <span class="qr-info-badge">📱 SMARTPHONE QR VERIFICATION</span>
