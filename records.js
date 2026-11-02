@@ -49,7 +49,502 @@ const departments = [
 // Official portal listing data.
 // Add new source-backed entries here; do not use portal listing numbers as document references.
 const records = [
- ];
+  {
+    "portalListingNumber": 1,
+    "date": "2026-09-18",
+    "title": "Hosting of Government Websites in Pakistan",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/EKqqtUqbPsT2rzrihJBD1SKaTTULTY8iJ6GAz0qC.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 2,
+    "date": "2026-07-04",
+    "title": "SACM Seher Gul Bhatti",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/86dsQGIzx6TEL44K6s6omIhBiQAIhqqXXU47f5Ak.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 3,
+    "date": "2026-07-14",
+    "title": "Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/DbGhPMQtBJt1JOq52LyFtLcmeNZT0ncrxDZ4TfWC.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 4,
+    "date": "2026-07-14",
+    "title": "Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/M84iJKsEcTGj51hnKADLK5K7xPyFejWeelyESCi0.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 5,
+    "date": "2026-03-02",
+    "title": "Holidays for Hindu Community for the Occasion of Dulhandi and Holi",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/Vpw4dnkKmZwHMYjMtcwJNt4v25ijmfXkhm8fahxo.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 7,
+    "date": "2026-01-28",
+    "title": "CYBER SECURITY ADVISORY ON ANDROID ZERO-DAY EXPLOIT IMMEDIATE ACTION",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/E2QyNbOlj1rEnKDpqVw7JlDP0UnjM4HiW1igdL4U.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 8,
+    "date": "2025-12-19",
+    "title": "Cyber Security Advisory on Prevention Against Exploitation of Video Conferencing Applications (Zoom, Google Meet etc)",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/91KSd8M00WHlXe2XWYRwtj5fVedPprKvFEcyM6cs.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 9,
+    "date": "2025-12-17",
+    "title": "Cyber Security Advisory on Risks Associated With Smart / Internet-Enabled IPTV Devices in Sensitive Premises Immediate Mitigation Measures",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/gwaa6YnZGMHo6OewaO59AJAmEanfZ4zVcf0YgWg6.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 10,
+    "date": "2025-11-13",
+    "title": "Cyber Security Advisory on Immediate Mitigation of Multiple Critical Vulnerabilities",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/TwZbR1JIFggsYiahHppGvjOEzVasz1tE8Ar2bQQC.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 11,
+    "date": "2025-11-13",
+    "title": "Cyber Security Advisory on Risks of Hosting Government Email Infrastructure Outside National Jurisdiction",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/YxH9l13VG7LvTHt3PnkiMNwiDWpX0ihLe6bXGpsK.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 13,
+    "date": "2025-09-26",
+    "title": "Mr. Muhammad Ismail Rahoo",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/kNJvWyfI1e96lAK8AAeGe2O4hGlyZwyj4w1dGvXA.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 14,
+    "date": "2025-09-26",
+    "title": "Allocate and Re allocate portfolios of Minister",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/NUBVPC7Mf2Xqiv8Ko4orXyRM0KDYMeMxBTNuDyUC.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 15,
+    "date": "2025-08-08",
+    "title": "Cyber Security Advisory -Revamping CS Postures of Government Websites",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/tvQLHxleLzEm25SLnY41DcNc9XO6ksqu3NInaVaD.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 16,
+    "date": "2025-08-07",
+    "title": "IRRIGATION DEPARTMENT ORDER",
+    "type": "Order",
+    "departmentCode": "IRR",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/AQTZAGE1ut3sOfOLd1pfyyQD5byktE8LHXHXury1.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 17,
+    "date": "2025-08-04",
+    "title": "CYBER SECURITY ADVISORY -IVANTI ZERO DAY ATTACK ON TELECOM IT NETWORK",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/s4hVYcCYTwnH2kHUFURlk6u5eeIGlOnRGu6fjti5.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 18,
+    "date": "2025-07-11",
+    "title": "Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/I9lOUpkcrcER8s13gchRUDnjKa7kv6mQO8XKIqlS.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 19,
+    "date": "2025-07-11",
+    "title": "Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/erumRCNOtWxObnr7hKhV3yaj5hV0W0kspE6ydIGX.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 20,
+    "date": "2025-07-11",
+    "title": "Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/NbyZkt5RJNNSoqQdNWkV9TBYtORzNFCIS6pBQKIy.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 21,
+    "date": "2025-07-11",
+    "title": "Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/Rf6VocBpvvb1XdxhTMKqPPMejgnDeCnDvKamujhK.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 22,
+    "date": "2025-07-10",
+    "title": "Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/RsAy4INAhviDaEfAS0tIQ9EDIXEnsYaTyj2yYkSL.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 23,
+    "date": "2025-07-10",
+    "title": "Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/7Z0eo3GDDwHdwrH0lSwPROqetq9ivUFe51V1mnzF.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 24,
+    "date": "2025-06-23",
+    "title": "Energy Department",
+    "type": "Notification",
+    "departmentCode": "ENERGY",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/68o4x8AUg1I3xgiDA0pfKxCCKVj34n5h9tAG358x.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 25,
+    "date": "2025-06-23",
+    "title": "Energy Department",
+    "type": "Notification",
+    "departmentCode": "ENERGY",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/GBSHc96r1ESVEfos8iBVEhY7T65tIM4vVmNE6Hx7.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 26,
+    "date": "2025-05-27",
+    "title": "Cyber Security Advisory Fortinet Farewell",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/Qso0DAjyl2N7X4PmhHgHoTWz8d8YbR3gHnXOoEP3.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 27,
+    "date": "2025-05-27",
+    "title": "Cyber Security Advisory Malicious Apps found on Google Play Store",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/2tgvRuFU0BAxiFXQaLQ6d6tfjmhUh6I72yUlmjnu.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 28,
+    "date": "2025-05-27",
+    "title": "Cyber Security Advisory Apple Patches Actively Exploited Web-kit Zero Day",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/vhwXShZd83cmLGQhivZEfiyf8wYo8Vj1iWA0LeOm.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 29,
+    "date": "2025-03-24",
+    "title": "Promotion",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/onT7XxArZeXgFYjwqLjEg0cIwoHIWqFQkpWIONzN.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 30,
+    "date": "2025-02-25",
+    "title": "Critical Information Infrastructure Protection",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/q0giNQ04xecwAd3O4j0Ek4bdpCuYDQq8UpQV1Yhw.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 31,
+    "date": "2025-02-25",
+    "title": "National Computer Emergency Response Team",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/dhRz7I11vmxmsoNZdcMLddmNLtry9DIusVgd2N8y.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 32,
+    "date": "2025-01-31",
+    "title": "Cyber Security Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/1m6J7NFR8a3EGRhwEFhrn2qms5DvYHAwuUZUE6hK.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 33,
+    "date": "2025-01-23",
+    "title": "Reply of Awarness Drive about Benami Transcation",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/npJyTdhGr3ZJWoXADd81pdQCK2qlWSQfS31HwGL5.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 34,
+    "date": "2025-01-23",
+    "title": "Awarness Drive about Benami Transication",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/M6ZJVZ2We2ffgTSbzKvoFDDOwYGPqwmimIubxKyW.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 35,
+    "date": "2025-01-13",
+    "title": "Appointment of Spokesperson",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/m6SZan2cRJxE7P99oCyewfrxobZAnwxTE8yRWG3T.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 36,
+    "date": "2025-01-13",
+    "title": "Appointment of Special Assistant to CM Sindh",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/3XQobJRfEyd2S3PdVLuZospS0j7Qft3BuBgZWXGC.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 37,
+    "date": "2025-01-03",
+    "title": "Amendments in the Sindh Government Rules of Business 1986",
+    "type": "Notification",
+    "departmentCode": "SGA-CD",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/Vb12RChHGzU3T1FUuqpXkK2oRY5fSZntzKEXZEfu.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 38,
+    "date": "2025-01-09",
+    "title": "EXPRESSION OF INTEREST",
+    "type": "Notice",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/2FhFjVb5nFWwHXxZS2cFmgxru44CJtvnNeCjsRcy.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 39,
+    "date": "2025-01-02",
+    "title": "Notification",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/zyklgpBFsbWK2qO02D0LgqGzDCbZUkqNrLFK7TvF.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 40,
+    "date": "2024-12-19",
+    "title": "Sindh Civil Servants Act 1973",
+    "type": "Legislation",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/8Wh8bi1ZLKr61rnfZ9l7xFuFRv8VVAMM4FLYuHGD.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 41,
+    "date": "2024-11-26",
+    "title": "Cyber Security Implications of wearable devices",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/CUp49cULvVZnh0ycxXP2nbeJ1aw4KC9sZs1hw2R9.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 42,
+    "date": "2024-11-26",
+    "title": "Cyber Security Advisory Strengthening \" Know your Client KYC process for cyber security compliance and threat mitigation",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/JhqAuLHR5XuhkFc3mghVLvYR3fadCMrJHZm1j4iA.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 43,
+    "date": "2024-11-26",
+    "title": "Cyber Security Advisory Securing Sensitive Digital Documents Confidential Files",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/kBU6WAiLS1CD27Ui6ZZOywE3a51YKEWrL3Xyqep1.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 44,
+    "date": "2024-08-27",
+    "title": "Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/VSdaNnl7oe4xxOsTpyeJ8RpjBH8Wnp0u02BoRP3b.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 45,
+    "date": "2024-08-13",
+    "title": "Cyber Security Advisory",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/QzdF8Z4eqDT8TH3HElzk65LkhHbW0k6q00ehmFN8.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 46,
+    "date": "2024-05-24",
+    "title": "Blacklisted",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/eWMuxAxiTDNgSKTpCMo4pyfEmj9Fri5pB0ZYwrcc.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 47,
+    "date": "2024-05-12",
+    "title": "Cabinet Committee on Finance",
+    "type": "Notification",
+    "departmentCode": "FIN",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/WqMOjIgVuaafrIMmnOwop8O1LKUvke6G90odjDXM.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 48,
+    "date": "2024-03-06",
+    "title": "INFORMATION SCIENCE & TECHNOLOGY DEPARTMENT ADVISORY",
+    "type": "Advisory",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/RnIKYfzovNTGcp0En65dDLQSrLwb6gPqmiVq3Hf8.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 49,
+    "date": "2023-08-21",
+    "title": "Caretaker Minister's Order Notification",
+    "type": "Order",
+    "departmentCode": "SGA-CD",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/HryZVQXNl6QwHEpzgHrGOpBuboOLirRWuq1r0ohM.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 50,
+    "date": "2023-05-19",
+    "title": "Serives General Administration & coordination Department",
+    "type": "Notification",
+    "departmentCode": null,
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/lByNMw8LO0xXHdp1FH0465mFFQ3hdGKQSc29iz5j.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 51,
+    "date": "2022-10-06",
+    "title": "Government of Sindh , Services General Administration and Coordination Department",
+    "type": "Notification",
+    "departmentCode": "SGA-CD",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/2JtBqKpJ8DwAV4YopbbXY8jPqPQf9bUI8FKpBXJB.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 52,
+    "date": "2022-05-20",
+    "title": "Services General Administration & Coordination Department",
+    "type": "Notification",
+    "departmentCode": "SGA-CD",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/eyXQ289ihxGGjoiaxY6RdiyWAtI34it0a9dPnL6e.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 53,
+    "date": "2022-05-20",
+    "title": "Services General Administration & Coordination Department",
+    "type": "Notification",
+    "departmentCode": "SGA-CD",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/7gRVJd6FiEHrA8elv9cZqTIGMH1w6L54qZrrwM8r.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 54,
+    "date": "2021-11-10",
+    "title": "GOVERNMENT OF SINDH, SERVICES GENERAL ADMINISTRATION & COORDINATION DEPARTMENT",
+    "type": "Notification",
+    "departmentCode": "SGA-CD",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/GVJps0jIandvqxl3NeB8i6uTZhiWg4ur5CqBEOye.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 55,
+    "date": "2021-08-10",
+    "title": "GOVERNMENT OF SINDH, SERVICES GENERAL ADMINISTRATION & COORDINATION DEPARTMENT CABINET SECTION (UPDATED)",
+    "type": "Notification",
+    "departmentCode": "SGA-CD",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/h2pV26oHPEytPUjfuDBB3VtNWx8sDKe3JDgxdLjR.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 56,
+    "date": "2019-03-11",
+    "title": "GOVERNMENT OF SINDH, SERVICES GENERAL ADMINISTRATION & COORDINATION DEPARTMENT",
+    "type": "Notification",
+    "departmentCode": "SGA-CD",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/wWDJhcvak1INBlUxJO6IG9XrOqFyORS7fugcRgoQ.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  },
+  {
+    "portalListingNumber": 57,
+    "date": "2019-03-08",
+    "title": "GOVERNMENT OF SINDH, ENERGY DEPARTMENT",
+    "type": "Notification",
+    "departmentCode": "ENERGY",
+    "pdfUrl": "https://www.sindh.gov.pk/storage/notification/2EJP6Iiy05zWRp6658jSHPLSTFwMx15KHBVgl8Bi.pdf",
+    "sourceUrl": "https://www.sindh.gov.pk/notifications?show=notification"
+  }
+];
 
 // Used only if a record's department is not present in the department list.
 const unspecifiedDepartment = {
