@@ -3,6 +3,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+from sqlalchemy import inspect
+
 from app import create_app
 from app.extensions import db
 from app.models import User
@@ -139,3 +141,85 @@ class CnicAccountTests(unittest.TestCase):
         self.assertEqual(0, result.exit_code, result.output)
         user = User.query.filter_by(email="cli@example.com").one()
         self.assertEqual("5678", user.cnic_last4)
+
+
+class CnicViewMigrationTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.database_path = os.path.join(self.temporary_directory.name, "view.sqlite")
+        self.app = create_app({
+            "TESTING": True,
+            "SECRET_KEY": "migration-test",
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:///{self.database_path}",
+            "SUPER_ADMIN_EMAIL": "owaispathan@sgnia.gos.pk",
+            "NOTIFICATION_UPLOAD_DIR": self.temporary_directory.name,
+            "SIGNING_KEY_DIR": os.path.join(self.temporary_directory.name, "signing-keys"),
+        })
+        self.context = self.app.app_context()
+        self.context.push()
+
+    def tearDown(self):
+        db.session.remove()
+        db.engine.dispose()
+        self.context.pop()
+        self.temporary_directory.cleanup()
+
+    def run_view_migration_from(self, revision):
+        with db.engine.begin() as connection:
+            connection.exec_driver_sql(
+                "CREATE TABLE users ("
+                "id INTEGER PRIMARY KEY, name VARCHAR(120) NOT NULL, "
+                "email VARCHAR(254) NOT NULL, password_hash VARCHAR(256) NOT NULL, "
+                "role VARCHAR(32) NOT NULL, department VARCHAR(160) NOT NULL, "
+                "active BOOLEAN NOT NULL, created_at DATETIME NOT NULL)"
+            )
+            connection.exec_driver_sql(
+                "CREATE VIEW user AS SELECT id, name, email, password_hash, "
+                "role, department, active, created_at FROM users"
+            )
+            connection.exec_driver_sql(
+                "CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"
+            )
+            connection.exec_driver_sql(
+                "INSERT INTO alembic_version (version_num) VALUES (?)",
+                (revision,),
+            )
+
+        result = self.app.test_cli_runner().invoke(args=["db", "upgrade", "head"])
+        self.assertEqual(0, result.exit_code, f"{result.output}\n{result.exception!r}")
+
+        inspector = inspect(db.engine)
+        base_columns = {column["name"] for column in inspector.get_columns("users")}
+        view_columns = {column["name"] for column in inspector.get_columns("user")}
+        indexes = inspector.get_indexes("users")
+        self.assertTrue({"cnic_hash", "cnic_last4"} <= base_columns)
+        self.assertTrue({"cnic_hash", "cnic_last4"} <= view_columns)
+        self.assertTrue(any(
+            index["name"] == "ix_user_cnic_hash" and index["unique"]
+            for index in indexes
+        ))
+        with db.engine.begin() as connection:
+            connection.exec_driver_sql(
+                "INSERT INTO users "
+                "(name, email, password_hash, role, department, active, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    "Existing Staff",
+                    "existing@example.com",
+                    "test-hash",
+                    "creator",
+                    "Finance Department",
+                    True,
+                    "2026-11-06 00:00:00",
+                ),
+            )
+        db.session.expire_all()
+        existing_user = User.query.filter_by(email="existing@example.com").one()
+        self.assertIsNone(existing_user.cnic_hash)
+        self.assertIsNone(existing_user.cnic_last4)
+
+    def test_cnic_migration_handles_legacy_user_view(self):
+        self.run_view_migration_from("9c4a71d2e6b0")
+
+    def test_follow_up_migration_repairs_view_if_cnic_revision_was_stamped(self):
+        self.run_view_migration_from("4fe8b39c120a")
