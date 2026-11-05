@@ -18,6 +18,7 @@ staff_portal/instance/
 # Scratch & test outputs
 test_*.pdf
 test_*.py
+!staff_portal/tests/test_pdf_generator.py
 scratch/
 
 # IDE & OS files
@@ -25,4 +26,3 @@ scratch/
 .idea/
 .DS_Store
 Thumbs.db
-

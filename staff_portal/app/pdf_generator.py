@@ -58,6 +58,165 @@ _PAGE_H = 841.9
 _MARGIN_L = 50
 _MARGIN_R = 545   # _PAGE_W - 50
 
+
+def _draw_continuation_header(page, reference: str, department: str) -> None:
+    page.insert_textbox(
+        pymupdf.Rect(_MARGIN_L, 75, _MARGIN_R, 98),
+        "GOVERNMENT OF SINDH",
+        fontname="helv",
+        fontsize=12,
+        color=_BLACK,
+        align=pymupdf.TEXT_ALIGN_CENTER,
+    )
+    page.insert_textbox(
+        pymupdf.Rect(_MARGIN_L, 99, _MARGIN_R, 121),
+        (department or "GOVERNMENT OF SINDH").upper(),
+        fontname="helv",
+        fontsize=10.5,
+        color=_BLACK,
+        align=pymupdf.TEXT_ALIGN_CENTER,
+    )
+    page.draw_line(
+        pymupdf.Point(_MARGIN_L, 124),
+        pymupdf.Point(_MARGIN_R, 124),
+        color=_BLACK,
+        width=0.5,
+    )
+    page.insert_textbox(
+        pymupdf.Rect(_MARGIN_L, 130, _MARGIN_R, 150),
+        f"{reference} (continued)",
+        fontname="times-italic",
+        fontsize=9,
+        color=_DARK_GREY,
+        align=pymupdf.TEXT_ALIGN_RIGHT,
+    )
+
+
+def _draw_pdf_footer(
+    page,
+    reference: str,
+    host_url: str,
+    department: str,
+    include_signatory: bool,
+) -> None:
+    if include_signatory:
+        sig_top = _PAGE_H - 185
+        page.insert_textbox(
+            pymupdf.Rect(300, sig_top, _MARGIN_R, sig_top + 25),
+            "-SECRETARY TO GOVT. OF SINDH-",
+            fontname="times-bold",
+            fontsize=10,
+            color=_BLACK,
+            align=pymupdf.TEXT_ALIGN_CENTER,
+        )
+        page.insert_textbox(
+            pymupdf.Rect(300, sig_top + 45, _MARGIN_R, sig_top + 65),
+            "SECTION OFFICER",
+            fontname="times-bold",
+            fontsize=9.5,
+            color=_DARK_GREY,
+            align=pymupdf.TEXT_ALIGN_CENTER,
+        )
+        page.insert_textbox(
+            pymupdf.Rect(300, sig_top + 65, _MARGIN_R, sig_top + 85),
+            department,
+            fontname="times-italic",
+            fontsize=8.5,
+            color=_MID_GREY,
+            align=pymupdf.TEXT_ALIGN_CENTER,
+        )
+
+    clean_host = host_url.rstrip("/")
+    verification_url = f"{clean_host}/verify/{reference}"
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=4,
+        border=2,
+    )
+    qr.add_data(verification_url)
+    qr.make(fit=True)
+    qr_img = qr.make_image(fill_color="#0b3a32", back_color="white")
+    qr_bytes = BytesIO()
+    try:
+        qr_img.save(qr_bytes)
+    except TypeError:
+        qr_img.save(qr_bytes)
+
+    qr_top = _PAGE_H - 180
+    qr_rect = pymupdf.Rect(_MARGIN_L, qr_top, _MARGIN_L + 75, qr_top + 75)
+    page.insert_image(qr_rect, stream=qr_bytes.getvalue())
+
+    lbl_x0 = _MARGIN_L + 80
+    page.insert_textbox(
+        pymupdf.Rect(lbl_x0, qr_top + 5, 330, qr_top + 18),
+        "OFFICIAL SINDH GOVERNMENT NOTIFICATION",
+        fontname="helv",
+        fontsize=6.5,
+        color=_SINDH_GREEN_LABEL,
+    )
+    page.insert_textbox(
+        pymupdf.Rect(lbl_x0, qr_top + 19, 330, qr_top + 31),
+        f"Archive Ref: {reference}",
+        fontname="courier",
+        fontsize=7,
+        color=_BLACK,
+    )
+    page.insert_textbox(
+        pymupdf.Rect(lbl_x0, qr_top + 32, 330, qr_top + 44),
+        "Scan QR code to verify authenticity",
+        fontname="helv",
+        fontsize=6,
+        color=_MID_GREY,
+    )
+    page.insert_textbox(
+        pymupdf.Rect(lbl_x0, qr_top + 45, 330, qr_top + 56),
+        "Sindh Government Notification Issuing Authority (SGNIA)",
+        fontname="helv",
+        fontsize=5.5,
+        color=_LIGHT_GREY,
+    )
+    page.draw_line(
+        pymupdf.Point(_MARGIN_L, qr_top - 5),
+        pymupdf.Point(_MARGIN_R, qr_top - 5),
+        color=_MID_GREY,
+        width=0.4,
+    )
+
+
+def _insert_body_pages(doc, first_page, body: str, body_rect, department: str, reference: str):
+    remaining = (body or "").strip()
+    page = first_page
+    body_page_indices = [first_page.number]
+    font = pymupdf.Font("tiro")
+    continuation_rect = pymupdf.Rect(_MARGIN_L, 160, _MARGIN_R, _PAGE_H - 200)
+
+    while remaining:
+        writer = pymupdf.TextWriter(page.rect)
+        overflow = writer.fill_textbox(
+            body_rect,
+            remaining,
+            font=font,
+            fontsize=11,
+            align=pymupdf.TEXT_ALIGN_LEFT,
+        )
+        writer.write_text(page)
+        if not overflow:
+            break
+
+        next_body = "\n".join(line for line, *_ in overflow).strip()
+        if not next_body or next_body == remaining:
+            raise RuntimeError(f"PDF generator could not paginate body text for ref {reference}")
+
+        page = doc.new_page(width=_PAGE_W, height=_PAGE_H)
+        body_page_indices.append(page.number)
+        _draw_continuation_header(page, reference, department)
+        body_rect = continuation_rect
+        remaining = next_body
+
+    return [doc.load_page(page_index) for page_index in body_page_indices]
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -231,119 +390,17 @@ def generate_official_sindh_pdf(
     # ------------------------------------------------------------------ #
     # 7. Body text                                                        #
     # ------------------------------------------------------------------ #
-    # Reserve bottom 200pt for signatory + QR area
     body_bottom = _PAGE_H - 200
     body_rect = pymupdf.Rect(_MARGIN_L, y_cursor, _MARGIN_R, body_bottom)
-    overflow = page.insert_textbox(
-        body_rect,
-        body.strip() if body else "",
-        fontname="times-roman",
-        fontsize=11,
-        color=_BLACK,
-        align=pymupdf.TEXT_ALIGN_LEFT,
-    )
-    if overflow < 0:
-        log.info("PDF generator: body text overflow (%d pt) for ref %s", overflow, reference)
-
-    # ------------------------------------------------------------------ #
-    # 8. Signatory block (bottom-right)                                   #
-    # ------------------------------------------------------------------ #
-    sig_top = _PAGE_H - 185
-    page.insert_textbox(
-        pymupdf.Rect(300, sig_top, _MARGIN_R, sig_top + 25),
-        "-SECRETARY TO GOVT. OF SINDH-",
-        fontname="times-bold",
-        fontsize=10,
-        color=_BLACK,
-        align=pymupdf.TEXT_ALIGN_CENTER,
-    )
-    page.insert_textbox(
-        pymupdf.Rect(300, sig_top + 45, _MARGIN_R, sig_top + 65),
-        "SECTION OFFICER",
-        fontname="times-bold",
-        fontsize=9.5,
-        color=_DARK_GREY,
-        align=pymupdf.TEXT_ALIGN_CENTER,
-    )
-    page.insert_textbox(
-        pymupdf.Rect(300, sig_top + 65, _MARGIN_R, sig_top + 85),
-        department,
-        fontname="times-italic",
-        fontsize=8.5,
-        color=_MID_GREY,
-        align=pymupdf.TEXT_ALIGN_CENTER,
-    )
-
-    # ------------------------------------------------------------------ #
-    # 9. Secure QR code (bottom-left)                                     #
-    # Encodes the SGNIA public verification URL for this reference.       #
-    # The QR data uses the archive reference — any tampering with the     #
-    # document (even a single byte) will not decode to a valid URL in     #
-    # the SGNIA system, because the reference is bound to the original    #
-    # content via the signed SHA-256 stored server-side.                  #
-    # ------------------------------------------------------------------ #
-    clean_host = host_url.rstrip("/")
-    verification_url = f"{clean_host}/verify/{reference}"
-
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_M,
-        box_size=4,
-        border=2,
-    )
-    qr.add_data(verification_url)
-    qr.make(fit=True)
-    qr_img = qr.make_image(fill_color="#0b3a32", back_color="white")
-
-    qr_bytes = BytesIO()
-    try:
-        qr_img.save(qr_bytes)
-    except TypeError:
-        # qrcode.image.pure.PyPNGImage does not accept the 'format' keyword
-        qr_img.save(qr_bytes)
-
-    qr_top = _PAGE_H - 180
-    qr_rect = pymupdf.Rect(_MARGIN_L, qr_top, _MARGIN_L + 75, qr_top + 75)
-    page.insert_image(qr_rect, stream=qr_bytes.getvalue())
-
-    # QR label strip (right of QR code)
-    lbl_x0 = _MARGIN_L + 80
-    page.insert_textbox(
-        pymupdf.Rect(lbl_x0, qr_top + 5, 330, qr_top + 18),
-        "OFFICIAL SINDH GOVERNMENT NOTIFICATION",
-        fontname="helv",
-        fontsize=6.5,
-        color=_SINDH_GREEN_LABEL,
-    )
-    page.insert_textbox(
-        pymupdf.Rect(lbl_x0, qr_top + 19, 330, qr_top + 31),
-        f"Archive Ref: {reference}",
-        fontname="courier",
-        fontsize=7,
-        color=_BLACK,
-    )
-    page.insert_textbox(
-        pymupdf.Rect(lbl_x0, qr_top + 32, 330, qr_top + 44),
-        "Scan QR code to verify authenticity",
-        fontname="helv",
-        fontsize=6,
-        color=_MID_GREY,
-    )
-    page.insert_textbox(
-        pymupdf.Rect(lbl_x0, qr_top + 45, 330, qr_top + 56),
-        "Sindh Government Notification Issuing Authority (SGNIA)",
-        fontname="helv",
-        fontsize=5.5,
-        color=_LIGHT_GREY,
-    )
-
-    # Thin top border line above footer area
-    page.draw_line(
-        pymupdf.Point(_MARGIN_L, qr_top - 5),
-        pymupdf.Point(_MARGIN_R, qr_top - 5),
-        color=_MID_GREY,
-        width=0.4,
-    )
+    body_pages = _insert_body_pages(doc, page, body, body_rect, department, reference)
+    for page_number, body_page in enumerate(body_pages):
+        _draw_pdf_footer(
+            body_page,
+            reference,
+            host_url,
+            department,
+            include_signatory=page_number == len(body_pages) - 1,
+        )
 
     # ------------------------------------------------------------------ #
     # 10. Save and hash                                                   #
@@ -417,5 +474,3 @@ def ensure_pdf_exists(notification, version=None):
             db.session.rollback()
 
     return pdf_filename
-
-

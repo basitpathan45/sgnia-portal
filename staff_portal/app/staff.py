@@ -647,6 +647,96 @@ def staff_version_pdf(notification_id, version_id):
     return response
 
 
+@staff_bp.post("/notifications/<int:notification_id>/versions/<int:version_id>/regenerate-pdf")
+@permission_required("create_notification")
+def regenerate_draft_version_pdf(notification_id, version_id):
+    notification = get_notification_or_404(notification_id)
+    version = db.session.get(NotificationVersion, version_id)
+    if version is None or version.notification_id != notification.id:
+        abort(404)
+    if not can_view_notification_document(notification):
+        abort(403)
+    if current_user.role != "super_admin" and version.created_by_id != current_user.id:
+        abort(403)
+    if version.status != "Draft":
+        abort(400, description="Only draft versions can have their PDF regenerated.")
+
+    upload_dir = Path(current_app.config["NOTIFICATION_UPLOAD_DIR"])
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    new_pdf_name = f"{uuid4().hex}.pdf"
+    new_pdf_path = upload_dir / new_pdf_name
+    version_reference = (
+        notification.reference
+        if version.version_number == 1
+        else f"{notification.reference}-v{version.version_number}"
+    )
+
+    def remove_uncommitted_pdf():
+        try:
+            new_pdf_path.unlink(missing_ok=True)
+        except OSError:
+            current_app.logger.exception("Could not remove uncommitted draft PDF %s.", new_pdf_path)
+
+    try:
+        new_sha256 = generate_official_sindh_pdf(
+            reference=version_reference,
+            title=version.title,
+            category=version.category,
+            department=version.department,
+            subject=version.subject,
+            body=version.body,
+            document_date=version.document_date or datetime.now(timezone.utc).date(),
+            official_reference=version.official_reference,
+            destination_path=new_pdf_path,
+            host_url=request.host_url,
+        )
+    except Exception as exc:
+        remove_uncommitted_pdf()
+        log.exception("PDF regeneration failed for draft %s: %s", version_reference, exc)
+        flash("Failed to regenerate the PDF from the saved draft text.", "danger")
+        return redirect(url_for("staff.versions", notification_id=notification.id))
+
+    previous_pdf_name = version.pdf_path
+    version.pdf_path = new_pdf_name
+    version.pdf_sha256 = new_sha256
+    version.signature = None
+    version.signature_key_id = None
+    version.signature_signed_at = None
+    if version.version_number == 1 and notification.status == "Draft":
+        notification.pdf_path = new_pdf_name
+        notification.pdf_sha256 = new_sha256
+    record_audit(
+        "draft_pdf_regenerated",
+        "notification_version",
+        version.id,
+        f"Regenerated the PDF from saved text for {version_reference}.",
+    )
+    try:
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        remove_uncommitted_pdf()
+        log.exception("Could not save regenerated PDF metadata for %s: %s", version_reference, exc)
+        flash("The regenerated PDF could not be saved to this draft.", "danger")
+        return redirect(url_for("staff.versions", notification_id=notification.id))
+
+    if previous_pdf_name and previous_pdf_name != new_pdf_name:
+        previous_path = upload_dir / Path(previous_pdf_name).name
+        notification_reference = Notification.query.filter_by(pdf_path=previous_pdf_name).first()
+        version_reference_row = NotificationVersion.query.filter(
+            NotificationVersion.pdf_path == previous_pdf_name,
+            NotificationVersion.id != version.id,
+        ).first()
+        if not notification_reference and not version_reference_row:
+            try:
+                previous_path.unlink(missing_ok=True)
+            except OSError:
+                current_app.logger.warning("Could not remove replaced draft PDF %s.", previous_path)
+
+    flash("Draft PDF regenerated from its saved text.", "success")
+    return redirect(url_for("staff.versions", notification_id=notification.id))
+
+
 @staff_bp.post("/notifications/<int:notification_id>/versions/<int:version_id>/submit")
 @permission_required("create_notification")
 def submit_amendment(notification_id, version_id):
