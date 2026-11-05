@@ -6,7 +6,7 @@
   <div>
     <div class="eyebrow">ADMINISTRATION</div>
     <h1>Staff users</h1>
-    <p class="muted">Create accounts with one of the four roles in the approved RBAC matrix. Creators and Approvers must be assigned to the same department to share a notification workflow.</p>
+    <p class="muted">Admins have full operational access. Only the designated Super Admin can manage their own privileged account. Creators and Approvers must be assigned to the same department to share a notification workflow.</p>
   </div>
 </div>
 
@@ -54,6 +54,7 @@
 
 {# ─── Staff Directory with Role Tabs ─────────────────────────────────────── #}
 {% set roles_config = [
+  ('admin',        'Admin',        '#166534', '#dcfce7'),
   ('super_admin', 'Super Admin',  '#166534', '#dcfce7'),
   ('approver',    'Approver',     '#1e40af', '#dbeafe'),
   ('creator',     'Creator',      '#92400e', '#fef3c7'),
@@ -61,7 +62,7 @@
 ] %}
 
 <section class="panel">
-  <div class="panel-heading"><h2>Staff directory</h2></div>
+  <div class="panel-heading"><div><h2>Staff directory</h2><p class="muted">Only {{ protected_super_admin_email }} is the designated Super Admin. Admin accounts cannot modify or replace this account.</p></div></div>
 
   {# Tab bar #}
   <div style="display:flex;border-bottom:2px solid var(--border,#e5e7eb);padding:0 1.5rem;flex-wrap:wrap;gap:0;">
@@ -117,10 +118,12 @@
         </thead>
         <tbody>
           {% for user in role_users %}
+          {% set protected_user = user.role == 'super_admin' or user.email|lower == protected_super_admin_email %}
           <tr data-search="{{ (user.name ~ ' ' ~ user.email ~ ' ' ~ user.department) | lower }}">
             <td style="font-weight:500;">{{ user.name }}</td>
             <td style="font-size:0.88rem;">{{ user.email }}</td>
             <td>
+              {% if current_user.role != 'admin' or not protected_user %}
               <form method="post" action="{{ url_for('staff.update_user_department', user_id=user.id) }}" class="inline-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <select name="department" aria-label="Department for {{ user.name }}">
@@ -130,9 +133,10 @@
                 </select>
                 <button class="text-button" type="submit">Save</button>
               </form>
+              {% else %}<span>{{ user.department }}</span>{% endif %}
             </td>
             <td>
-              {% if user.id != current_user.id %}
+              {% if user.id != current_user.id and (current_user.role != 'admin' or not protected_user) %}
               <form method="post" action="{{ url_for('staff.update_user_role', user_id=user.id) }}" class="inline-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <select name="role" aria-label="Role for {{ user.name }}">
@@ -143,7 +147,7 @@
                 <button class="text-button" type="submit">Save</button>
               </form>
               {% else %}
-              <span style="font-size:0.85rem;">{{ user.role_label }}</span>
+              <span style="font-size:0.85rem;">{{ user.role_label }}{% if current_user.role == 'admin' and protected_user %} · Protected{% endif %}</span>
               {% endif %}
             </td>
             <td>
@@ -157,7 +161,7 @@
               {{ user.created_at.strftime('%d %b %Y') }}
             </td>
             <td>
-              {% if user.id != current_user.id %}
+              {% if user.id != current_user.id and (current_user.role != 'admin' or not protected_user) %}
               <div style="display:flex;gap:0.35rem;flex-wrap:wrap;align-items:center;">
                 {# Edit Name #}
                 <button class="text-button" type="button"
@@ -187,7 +191,7 @@
                 </form>
               </div>
               {% else %}
-              <span style="font-size:0.8rem;color:var(--muted,#6b7280);">Current account</span>
+              <span style="font-size:0.8rem;color:var(--muted,#6b7280);">{% if current_user.role == 'admin' and protected_user %}Protected Super Admin{% else %}Current account{% endif %}</span>
               {% endif %}
             </td>
           </tr>
@@ -254,8 +258,9 @@
 
 <script>
 /* ---- Role tab keys ---- */
-const ROLE_KEYS = ['super_admin', 'approver', 'creator', 'auditor'];
+const ROLE_KEYS = ['admin', 'super_admin', 'approver', 'creator', 'auditor'];
 const ROLE_COLORS = {
+  admin:       '#166534',
   super_admin: '#166534',
   approver:    '#1e40af',
   creator:     '#92400e',

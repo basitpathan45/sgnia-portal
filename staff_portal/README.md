@@ -19,21 +19,20 @@ python -m pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-Set `FLASK_SECRET_KEY` in `.env` to a long random value. The local default database is `instance/sdgnm-dev.db`.
+Set `FLASK_SECRET_KEY` in `.env` to a long random value. `SUPER_ADMIN_EMAIL` identifies the one protected Super Admin account and defaults to `owaispathan@sgnia.gos.pk`. The local default database is `instance/sdgnm-dev.db`.
 
 For a fresh database, apply the versioned schema and create staff accounts using interactive prompts (passwords are not placed in source code):
 
 ```powershell
-python -m flask --app run.py db upgrade
+python -m flask --app run.py prepare-db
 python -m flask --app run.py seed-departments
 python -m flask --app run.py create-user
 ```
 
-For an existing database created before versioned migrations were introduced, back it up first (database, PDFs, and signing-key directory), then run the compatibility update and stamp the current baseline:
+For an existing database created before versioned migrations were introduced, back it up first (database, PDFs, and signing-key directory), then run the compatibility update and role migration:
 
 ```powershell
-python -m flask --app run.py migrate-db
-python -m flask --app run.py db stamp head
+python -m flask --app run.py prepare-db
 ```
 
 Use the versioned migration commands for future changes. Review generated migrations before applying them:
@@ -43,7 +42,7 @@ python -m flask --app run.py db migrate -m "Describe schema change"
 python -m flask --app run.py db upgrade
 ```
 
-The user command asks for name, email, department, one role (`super_admin`, `approver`, `creator`, or `auditor`), and an initial password of at least 12 characters. Create one account per staff member; do not share passwords.
+The user command asks for name, email, department, one role (`admin`, `approver`, `creator`, or `auditor`), and an initial password of at least 12 characters. Only the account matching `SUPER_ADMIN_EMAIL` can be created as `super_admin`. Create one account per staff member; do not share passwords.
 
 Start the app:
 
@@ -59,15 +58,18 @@ To use MySQL, create a database and restricted database user, then set this in `
 DATABASE_URL=mysql+pymysql://sdgnm_user:your-password@127.0.0.1:3306/sdgnm
 ```
 
-Do not commit `.env` or use development credentials on a deployed server. Set `APP_ENV=production`, `FLASK_SECRET_KEY`, `DATABASE_URL`, `NOTIFICATION_UPLOAD_DIR`, and `SIGNING_KEY_DIR` before deployment. The two storage paths must be persistent, access-controlled locations outside the source checkout; the private-key directory must be readable only by the application identity. Production mode refuses to start without these settings and enables secure session cookies (which require HTTPS). `GET /health` checks database readiness and returns only `ok` or `unavailable`.
+Do not commit `.env` or use development credentials on a deployed server. Set `APP_ENV=production`, `FLASK_SECRET_KEY`, `DATABASE_URL`, `SUPER_ADMIN_EMAIL`, `NOTIFICATION_UPLOAD_DIR`, and `SIGNING_KEY_DIR` before deployment. The two storage paths must be persistent, access-controlled locations outside the source checkout; the private-key directory must be readable only by the application identity. Production mode refuses to start without these settings and enables secure session cookies (which require HTTPS). `GET /health` checks database readiness and returns only `ok` or `unavailable`.
+
+The container prepares legacy databases and applies database migrations before starting Gunicorn. Back up the database before deploying schema or role migrations. The administrator-role migration requires `SUPER_ADMIN_EMAIL` to match exactly one existing staff account whenever the database already contains users; it promotes that account to active `super_admin` and converts all other existing `super_admin` accounts to `admin`. Deployment stops with an explicit error if the designated email is missing or duplicated. A fresh, empty database can be migrated first and then bootstrapped with `create-user`.
 
 ## First increment
 
 - Password-hashed staff accounts and session-based login/logout.
-- Server-enforced role permissions from the supplied RBAC matrix.
+- Server-enforced role permissions from the staff RBAC matrix.
 - Role-specific navigation and dashboard.
-- Super Admin can provision staff accounts, assign/update roles, and activate/deactivate accounts from the protected user-management page; initial password values are hashed and not displayed again.
-- Super Admin can assign staff to departments. Creators can draft only for their assigned department, and Approvers see only workflow items for that same department.
+- One designated Super Admin (`SUPER_ADMIN_EMAIL`) and Admin accounts with full operational permissions. Admins can manage staff and the portal but cannot create/assign another Super Admin or change the designated Super Admin account's name, password, department, role, status, or existence.
+- Admins can provision staff accounts, assign/update non-Super-Admin roles, and activate/deactivate accounts from the protected user-management page; initial password values are hashed and not displayed again.
+- Admins can assign staff to departments. Creators can draft only for their assigned department, and Approvers see only workflow items for that same department.
 - Draft creation, submission, review decisions, and publish status transitions.
 - Required PDF upload (PDF signature checked; maximum request size 16 MB), document date, and optional official reference on each new notification draft.
 - Published notifications and their PDFs are exposed to the public archive only after approval and publication; draft, pending, rejected, and returned records remain private.
@@ -83,15 +85,15 @@ Do not commit `.env` or use development credentials on a deployed server. Set `A
 
 ## Supplied RBAC matrix
 
-| Permission | Super Admin | Approver | Creator | Auditor |
-|---|---:|---:|---:|---:|
-| Create / draft notification | Yes | Yes | Yes | No |
-| Approve / reject | Yes | Yes | No | No |
-| Publish to public portal | Yes | Yes | No | No |
-| OCR digitization | Yes | Yes | Yes | No |
-| Manage users / roles | Yes | No | No | No |
-| Manage signing keys | Yes | No | No | No |
-| View audit trail | Yes | Yes | No | Yes |
+| Permission | Super Admin | Admin | Approver | Creator | Auditor |
+|---|---:|---:|---:|---:|---:|
+| Create / draft notification | Yes | Yes | Yes | Yes | No |
+| Approve / reject | Yes | Yes | Yes | No | No |
+| Publish to public portal | Yes | Yes | Yes | No | No |
+| OCR digitization | Yes | Yes | Yes | Yes | No |
+| Manage users / roles | Yes | Yes | No | No | No |
+| Manage signing keys | Yes | Yes | No | No | No |
+| View audit trail | Yes | Yes | Yes | No | Yes |
 
 Dashboard and navigation visibility are not the security boundary: the same permissions are checked on server routes and write actions. Public End User pages do not grant staff permissions.
 

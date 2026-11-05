@@ -10,6 +10,8 @@ services:
     envVars:
       - key: APP_ENV
         value: development
+      - key: SUPER_ADMIN_EMAIL
+        value: owaispathan@sgnia.gos.pk
       - key: FLASK_SECRET_KEY
         value: Za7aJQYZbRjo4StPElZRP0vlUaQK1x_y0e5-Dh-uFnqVQ0lCeFU-9opMVrSguaxC
       - key: SUPABASE_URL

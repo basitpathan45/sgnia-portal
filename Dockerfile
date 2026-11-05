@@ -23,5 +23,5 @@ COPY . .
 ENV PORT=7860
 EXPOSE 7860
 
-# Start Flask with Gunicorn on the platform-provided port.
-CMD ["sh", "-c", "gunicorn --chdir staff_portal --bind 0.0.0.0:${PORT:-7860} --workers 2 --timeout 120 run:app"]
+# Prepare legacy databases and apply migrations before starting Gunicorn.
+CMD ["sh", "-c", "cd staff_portal && flask --app run.py prepare-db && exec gunicorn --bind 0.0.0.0:${PORT:-7860} --workers 2 --timeout 120 run:app"]

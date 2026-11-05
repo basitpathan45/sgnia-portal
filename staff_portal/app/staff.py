@@ -17,11 +17,15 @@ from .documents import sha256_file
 from .models import AuditLog, Department, Notification, NotificationVersion, SigningKey, User
 from .ocr import OcrError, extract_pdf_text, extract_document_text, ocr_engine_available
 from .permissions import (
+    ADMIN,
+    ADMINISTRATOR_ROLES,
+    ASSIGNABLE_ROLES,
     APPROVER,
     AUDITOR,
     CREATOR,
     ROLE_PERMISSIONS,
-    ROLES,
+    SUPER_ADMIN,
+    is_protected_super_admin,
     permission_required,
 )
 from .signatures import SigningConfigurationError, generate_signing_key, sign_published_version
@@ -97,7 +101,7 @@ class StaffUserForm(FlaskForm):
     role = SelectField(
         "Role",
         choices=[
-            ("super_admin", "Super Admin"),
+            (ADMIN, "Admin"),
             ("approver", "Approver"),
             ("creator", "Creator"),
             ("auditor", "Auditor"),
@@ -125,6 +129,11 @@ def latest_version(notification):
     ).first()
 
 
+def _protect_super_admin_account(user):
+    if current_user.role == ADMIN and is_protected_super_admin(user):
+        abort(403)
+
+
 def published_version(notification):
     return NotificationVersion.query.filter_by(
         notification_id=notification.id,
@@ -134,7 +143,7 @@ def published_version(notification):
 
 def can_view_notification_document(notification):
     return (
-        current_user.role == "super_admin"
+        current_user.role in ADMINISTRATOR_ROLES
         or current_user.role == AUDITOR
         or (current_user.role == CREATOR and notification.created_by_id == current_user.id)
         or (current_user.role == APPROVER and notification.department == current_user.department)
@@ -200,7 +209,7 @@ def notifications():
         query = query.filter_by(status=status)
     if current_user.role == CREATOR:
         query = query.filter_by(created_by_id=current_user.id)
-    elif current_user.role != "super_admin":
+    elif current_user.role not in ADMINISTRATOR_ROLES:
         query = query.filter_by(department=current_user.department)
     items = query.order_by(Notification.updated_at.desc()).limit(100).all()
     return render_template("notifications.html", notifications=items, selected_status=status)
@@ -211,7 +220,7 @@ def notifications():
 def notification_new():
     form = NotificationForm()
     departments = Department.query.filter_by(active=True).order_by(Department.name).all()
-    if current_user.role == "super_admin":
+    if current_user.role in ADMINISTRATOR_ROLES:
         department_names = [department.name for department in departments]
     else:
         department_names = [current_user.department]
@@ -222,7 +231,7 @@ def notification_new():
     if form.validate_on_submit():
         # Department-scoped staff may only create drafts for their own department.
         department = form.department.data
-        if current_user.role != "super_admin" and department != current_user.department:
+        if current_user.role not in ADMINISTRATOR_ROLES and department != current_user.department:
             abort(403)
         reference = f"SGNIA-{datetime.now(timezone.utc):%Y}-{uuid4().hex[:8].upper()}"
         upload_dir = Path(current_app.config["NOTIFICATION_UPLOAD_DIR"])
@@ -312,7 +321,7 @@ def staff_notification_pdf(notification_id):
 @permission_required("create_notification")
 def submit_notification(notification_id):
     notification = get_notification_or_404(notification_id)
-    if current_user.role != "super_admin" and notification.created_by_id != current_user.id:
+    if current_user.role not in ADMINISTRATOR_ROLES and notification.created_by_id != current_user.id:
         abort(403)
     next_status = STATUS_FLOW.get(notification.status, {}).get("submit")
     if not next_status:
@@ -333,7 +342,7 @@ def submit_notification(notification_id):
 def approvals():
     query = Notification.query
     version_query = NotificationVersion.query.join(Notification).filter(NotificationVersion.version_number > 1)
-    if current_user.role != "super_admin":
+    if current_user.role not in ADMINISTRATOR_ROLES:
         query = query.filter_by(department=current_user.department)
         version_query = version_query.filter(Notification.department == current_user.department)
     pending = query.filter_by(status="Pending Approval").order_by(Notification.created_at.asc()).all()
@@ -361,7 +370,7 @@ def process_approval(notification_id, action):
     if action not in {"approve", "return", "reject", "publish"}:
         abort(400)
     notification = get_notification_or_404(notification_id)
-    if current_user.role != "super_admin" and notification.department != current_user.department:
+    if current_user.role not in ADMINISTRATOR_ROLES and notification.department != current_user.department:
         abort(403)
 
     current_status = notification.status
@@ -446,7 +455,7 @@ def ocr_review(token):
         abort(404)
     form = OcrDraftForm()
     departments = Department.query.filter_by(active=True).order_by(Department.name).all()
-    department_names = [department.name for department in departments] if current_user.role == "super_admin" else [
+    department_names = [department.name for department in departments] if current_user.role in ADMINISTRATOR_ROLES else [
         current_user.department,
     ]
     if current_user.department not in department_names:
@@ -464,7 +473,7 @@ def ocr_review(token):
     if form.validate_on_submit():
         if form.token.data != token:
             abort(400, description="The review token did not match the uploaded document.")
-        if current_user.role != "super_admin" and form.department.data != current_user.department:
+        if current_user.role not in ADMINISTRATOR_ROLES and form.department.data != current_user.department:
             abort(403)
         pdf_bytes = pending_pdf.read_bytes()
         if len(pdf_bytes) > current_app.config["MAX_NOTIFICATION_PDF_BYTES"] or not pdf_bytes.startswith(b"%PDF-"):
@@ -656,7 +665,7 @@ def regenerate_draft_version_pdf(notification_id, version_id):
         abort(404)
     if not can_view_notification_document(notification):
         abort(403)
-    if current_user.role != "super_admin" and version.created_by_id != current_user.id:
+    if current_user.role not in ADMINISTRATOR_ROLES and version.created_by_id != current_user.id:
         abort(403)
     if version.status != "Draft":
         abort(400, description="Only draft versions can have their PDF regenerated.")
@@ -746,7 +755,7 @@ def submit_amendment(notification_id, version_id):
         abort(404)
     if not can_view_notification_document(notification):
         abort(403)
-    if current_user.role != "super_admin" and version.created_by_id != current_user.id:
+    if current_user.role not in ADMINISTRATOR_ROLES and version.created_by_id != current_user.id:
         abort(403)
     if version.status != "Draft":
         abort(400, description="Only draft amendment versions can be submitted. Create a new amendment after a return or rejection.")
@@ -772,7 +781,7 @@ def process_amendment_approval(version_id, action):
     if version is None or version.version_number == 1:
         abort(404)
     notification = version.notification
-    if current_user.role != "super_admin" and notification.department != current_user.department:
+    if current_user.role not in ADMINISTRATOR_ROLES and notification.department != current_user.department:
         abort(403)
     current_status = version.status
     next_status = STATUS_FLOW.get(current_status, {}).get(action)
@@ -827,7 +836,11 @@ def users():
 
     if form.validate_on_submit():
         email = form.email.data.strip().lower()
-        if User.query.filter_by(email=email).first():
+        if email == current_app.config["SUPER_ADMIN_EMAIL"]:
+            flash("The designated Super Admin account cannot be created or replaced from this page.", "danger")
+        elif form.role.data == SUPER_ADMIN:
+            flash("The Super Admin role is reserved for the designated account.", "danger")
+        elif User.query.filter_by(email=email).first():
             flash("A staff account with that email already exists.", "danger")
         else:
             user = User(
@@ -847,9 +860,14 @@ def users():
     return render_template(
         "users.html",
         users=users_list,
-        roles=ROLE_PERMISSIONS,
+        roles={
+            role: permissions
+            for role, permissions in ROLE_PERMISSIONS.items()
+            if role in ASSIGNABLE_ROLES
+        },
         form=form,
         departments=department_names,
+        protected_super_admin_email=current_app.config["SUPER_ADMIN_EMAIL"],
     )
 
 
@@ -869,6 +887,7 @@ def reset_user_password(user_id):
     user = db.session.get(User, user_id)
     if user is None:
         abort(404)
+    _protect_super_admin_account(user)
     if user.id == current_user.id:
         flash("Use your account settings to change your own password.", "danger")
         return redirect(url_for("staff.users"))
@@ -895,6 +914,7 @@ def edit_user_name(user_id):
     user = db.session.get(User, user_id)
     if user is None:
         abort(404)
+    _protect_super_admin_account(user)
     new_name = request.form.get("name", "").strip()
     if not new_name or len(new_name) > 120:
         flash("Please provide a valid name (max 120 characters).", "danger")
@@ -930,6 +950,7 @@ def delete_user(user_id):
     if user.id == current_user.id:
         flash("You cannot delete your own account.", "danger")
         return redirect(url_for("staff.users"))
+    _protect_super_admin_account(user)
 
     # Nullify FK references so the delete succeeds and data integrity is kept.
     Notification.query.filter_by(created_by_id=user.id).update({"created_by_id": None})
@@ -961,6 +982,7 @@ def toggle_user_active(user_id):
     if user.id == current_user.id:
         flash("You cannot deactivate your own account.", "danger")
         return redirect(url_for("staff.users"))
+    _protect_super_admin_account(user)
     user.active = not user.active
     status = "activated" if user.active else "deactivated"
     record_audit(f"staff_account_{status}", "user", user.id, f"{user.email} was {status}.")
@@ -975,6 +997,7 @@ def update_user_department(user_id):
     user = db.session.get(User, user_id)
     if user is None:
         abort(404)
+    _protect_super_admin_account(user)
     department = request.form.get("department", "").strip()
     allowed_departments = {
         item.name for item in Department.query.filter_by(active=True).all()
@@ -1004,8 +1027,10 @@ def update_user_role(user_id):
     role = request.form.get("role", "").strip()
     if user.id == current_user.id:
         flash("You cannot change your own role.", "danger")
-    elif role not in ROLES:
+    elif role not in ASSIGNABLE_ROLES:
         abort(400, description="Select one of the defined staff roles.")
+    elif is_protected_super_admin(user):
+        abort(403)
     else:
         previous_role = user.role
         user.role = role

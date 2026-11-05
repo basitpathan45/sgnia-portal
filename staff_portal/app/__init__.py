@@ -47,6 +47,10 @@ def create_app(test_config=None):
         WTF_CSRF_TIME_LIMIT=3600,
         MAX_CONTENT_LENGTH=17 * 1024 * 1024,
         MAX_NOTIFICATION_PDF_BYTES=16 * 1024 * 1024,
+        SUPER_ADMIN_EMAIL=os.environ.get(
+            "SUPER_ADMIN_EMAIL",
+            "owaispathan@sgnia.gos.pk",
+        ).strip().lower(),
         NOTIFICATION_UPLOAD_DIR=os.environ.get(
             "NOTIFICATION_UPLOAD_DIR",
             str(instance_dir / "notification-files"),
@@ -85,9 +89,13 @@ def create_app(test_config=None):
 
     @app.context_processor
     def provide_template_helpers():
-        from .permissions import can
+        from .permissions import can, is_administrator, is_protected_super_admin
 
-        return {"can": can}
+        return {
+            "can": can,
+            "is_administrator": is_administrator,
+            "is_protected_super_admin": is_protected_super_admin,
+        }
 
     @app.cli.command("init-db")
     def init_db_command():
@@ -206,16 +214,34 @@ def create_app(test_config=None):
 
         backfill_audit_chain()
 
-    @app.cli.command("migrate-db")
-    def migrate_db_command():
-        """Add document, version-history, and audit-chain fields to the existing database."""
+    def update_legacy_database_schema():
         db.create_all()
         add_notification_columns()
         add_audit_columns()
         backfill_notification_versions()
         backfill_document_hashes()
         backfill_audit_hash_chain()
+
+    @app.cli.command("migrate-db")
+    def migrate_db_command():
+        """Add document, version-history, and audit-chain fields to the existing database."""
+        update_legacy_database_schema()
         print("Database schema is up to date.")
+
+    @app.cli.command("prepare-db")
+    def prepare_db_command():
+        """Upgrade legacy or versioned databases before serving requests."""
+        from alembic import command
+        from sqlalchemy import inspect
+
+        inspector = inspect(db.engine)
+        migrate = app.extensions["migrate"].migrate
+        config = migrate.get_config("migrations")
+        if inspector.has_table("user") and not inspector.has_table("alembic_version"):
+            update_legacy_database_schema()
+            command.stamp(config, revision="08a5be3079bc")
+        command.upgrade(config, revision="head")
+        print("Database migrations are up to date.")
 
     @app.cli.command("verify-audit-chain")
     def verify_audit_chain_command():
@@ -233,7 +259,7 @@ def create_app(test_config=None):
         import getpass
 
         from .models import User
-        from .permissions import ROLES
+        from .permissions import ROLES, SUPER_ADMIN
 
         name = input("Full name: ").strip()
         email = input("Email: ").strip().lower()
@@ -242,6 +268,10 @@ def create_app(test_config=None):
         role = input("Role: ").strip().lower()
         if not name or not email or not department or role not in ROLES:
             raise SystemExit("Name, email, department, and a valid role are required.")
+        if role == SUPER_ADMIN and email != app.config["SUPER_ADMIN_EMAIL"]:
+            raise SystemExit("Only SUPER_ADMIN_EMAIL may be created as Super Admin.")
+        if email == app.config["SUPER_ADMIN_EMAIL"] and role != SUPER_ADMIN:
+            raise SystemExit("SUPER_ADMIN_EMAIL must be created with the Super Admin role.")
         if User.query.filter_by(email=email).first():
             raise SystemExit("A staff account with that email already exists.")
 

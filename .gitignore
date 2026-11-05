@@ -19,6 +19,7 @@ staff_portal/instance/
 test_*.pdf
 test_*.py
 !staff_portal/tests/test_pdf_generator.py
+!staff_portal/tests/test_admin_safety.py
 scratch/
 
 # IDE & OS files

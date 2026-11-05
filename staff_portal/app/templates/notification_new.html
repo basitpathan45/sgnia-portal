@@ -6,7 +6,7 @@
     {{ form.hidden_tag() }}
     <div class="field-group span-2">{{ form.title.label }}{{ form.title(placeholder="Enter a concise title") }}{% for error in form.title.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
     <div class="field-group">{{ form.category.label }}{{ form.category() }}</div>
-    <div class="field-group">{{ form.department.label }}{{ form.department() }}{% if current_user.role != 'super_admin' %}<small class="muted">This draft is restricted to your assigned department: {{ current_user.department }}. Ask a Super Admin to update your department if needed.</small>{% endif %}{% for error in form.department.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+    <div class="field-group">{{ form.department.label }}{{ form.department() }}{% if not is_administrator(current_user) %}<small class="muted">This draft is restricted to your assigned department: {{ current_user.department }}. Ask an administrator to update your department if needed.</small>{% endif %}{% for error in form.department.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
     <div class="field-group span-2">{{ form.subject.label }}{{ form.subject(placeholder="Summarize the document subject") }}</div>
     <div class="field-group">{{ form.document_date.label }}{{ form.document_date() }}{% for error in form.document_date.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
     <div class="field-group">{{ form.official_reference.label }}{{ form.official_reference(placeholder="Optional official file/reference number") }}</div>
