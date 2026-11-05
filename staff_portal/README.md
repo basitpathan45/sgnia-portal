@@ -19,7 +19,7 @@ python -m pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-Set `FLASK_SECRET_KEY` in `.env` to a long random value. `SUPER_ADMIN_EMAIL` identifies the one protected Super Admin account and defaults to `owaispathan@sgnia.gos.pk`. The local default database is `instance/sdgnm-dev.db`.
+Set `FLASK_SECRET_KEY` in `.env` to a long random value. `SUPER_ADMIN_EMAIL` identifies the one protected Super Admin account and defaults to `owaispathan@sgnia.gos.pk`. CNICs are stored as a keyed digest plus the last four digits, not as plaintext. Set an optional, stable `CNIC_LOOKUP_KEY` secret to keep CNIC search and duplicate detection working independently of `FLASK_SECRET_KEY` rotation; otherwise the application derives the lookup key from `FLASK_SECRET_KEY`, which must then remain unchanged while those CNICs are in use. The local default database is `instance/sdgnm-dev.db`.
 
 For a fresh database, apply the versioned schema and create staff accounts using interactive prompts (passwords are not placed in source code):
 
@@ -42,7 +42,7 @@ python -m flask --app run.py db migrate -m "Describe schema change"
 python -m flask --app run.py db upgrade
 ```
 
-The user command asks for name, email, department, one role (`admin`, `approver`, `creator`, or `auditor`), and an initial password of at least 12 characters. Only the account matching `SUPER_ADMIN_EMAIL` can be created as `super_admin`. Create one account per staff member; do not share passwords.
+The user command asks for name, email, department, a unique 13-digit CNIC, one role (`admin`, `approver`, `creator`, or `auditor`), and an initial password of at least 12 characters. The staff directory also requires CNIC for newly created accounts and supports exact CNIC lookup while displaying only a masked value. Existing accounts without CNIC remain usable. Only the account matching `SUPER_ADMIN_EMAIL` can be created as `super_admin`. Create one account per staff member; do not share passwords.
 
 Start the app:
 

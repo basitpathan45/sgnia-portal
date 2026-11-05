@@ -9,10 +9,12 @@ from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from wtforms import BooleanField, DateField, EmailField, HiddenField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, InputRequired, Length, Optional
+from wtforms.validators import DataRequired, Email, InputRequired, Length, Optional, ValidationError
+from sqlalchemy.exc import IntegrityError
 
 from .extensions import db
 from .audit import append_audit_log, verify_audit_chain
+from .cnic import cnic_fingerprint, normalize_cnic
 from .documents import sha256_file
 from .models import AuditLog, Department, Notification, NotificationVersion, SigningKey, User
 from .ocr import OcrError, extract_pdf_text, extract_document_text, ocr_engine_available
@@ -97,6 +99,11 @@ class OcrDraftForm(FlaskForm):
 class StaffUserForm(FlaskForm):
     name = StringField("Full name", validators=[DataRequired(), Length(max=120)])
     email = EmailField("Staff email", validators=[DataRequired(), Email(), Length(max=254)])
+    cnic = StringField(
+        "CNIC (13 digits)",
+        validators=[DataRequired()],
+        render_kw={"required": True, "inputmode": "numeric", "autocomplete": "off", "maxlength": 20},
+    )
     department = SelectField("Department", validators=[DataRequired()])
     role = SelectField(
         "Role",
@@ -110,6 +117,10 @@ class StaffUserForm(FlaskForm):
     )
     password = PasswordField("Initial password (at least 12 characters)", validators=[DataRequired(), Length(min=12, max=128)])
     submit = SubmitField("Create staff account")
+
+    def validate_cnic(self, field):
+        if not normalize_cnic(field.data):
+            raise ValidationError("Enter a valid 13-digit CNIC.")
 
 
 def record_audit(action, target_type, target_id=None, details=""):
@@ -826,7 +837,8 @@ def departments():
 @staff_bp.route("/users", methods=["GET", "POST"])
 @permission_required("manage_users")
 def users():
-    form = StaffUserForm()
+    is_cnic_search = request.method == "POST" and "search_cnic" in request.form
+    form = StaffUserForm(formdata=None) if is_cnic_search else StaffUserForm()
     users_list = User.query.order_by(User.name).all()
     department_names = sorted(
         {department.name for department in Department.query.filter_by(active=True).all()}
@@ -834,29 +846,59 @@ def users():
     )
     form.department.choices = [(name, name) for name in department_names]
 
-    if form.validate_on_submit():
+    if is_cnic_search:
+        normalized_cnic = normalize_cnic(request.form.get("cnic", ""))
+        users_list = []
+        if normalized_cnic:
+            matching_user = User.query.filter_by(
+                cnic_hash=cnic_fingerprint(normalized_cnic)
+            ).first()
+            if matching_user:
+                users_list = [matching_user]
+                flash("A staff account matching that CNIC was found.", "success")
+            else:
+                flash("No staff account was found with that CNIC.", "info")
+        else:
+            flash("Enter a valid 13-digit CNIC to search.", "danger")
+    elif form.validate_on_submit():
         email = form.email.data.strip().lower()
+        normalized_cnic = normalize_cnic(form.cnic.data)
+        cnic_hash = cnic_fingerprint(normalized_cnic)
         if email == current_app.config["SUPER_ADMIN_EMAIL"]:
             flash("The designated Super Admin account cannot be created or replaced from this page.", "danger")
         elif form.role.data == SUPER_ADMIN:
             flash("The Super Admin role is reserved for the designated account.", "danger")
         elif User.query.filter_by(email=email).first():
             flash("A staff account with that email already exists.", "danger")
+        elif User.query.filter_by(cnic_hash=cnic_hash).first():
+            flash("A staff account with that CNIC already exists.", "danger")
         else:
             user = User(
                 name=form.name.data.strip(),
                 email=email,
                 department=form.department.data.strip(),
                 role=form.role.data,
+                cnic_hash=cnic_hash,
+                cnic_last4=normalized_cnic[-4:],
             )
             user.set_password(form.password.data)
-            db.session.add(user)
-            db.session.flush()
-            record_audit("staff_account_created", "user", user.id, f"Created {user.role} account for {user.email}.")
-            db.session.commit()
-            flash("Staff account created. Share its initial password securely with the staff member.", "success")
-            return redirect(url_for("staff.users"))
+            try:
+                db.session.add(user)
+                db.session.flush()
+                record_audit("staff_account_created", "user", user.id, f"Created {user.role} account for {user.email}.")
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                if User.query.filter_by(cnic_hash=cnic_hash).first():
+                    flash("A staff account with that CNIC already exists.", "danger")
+                else:
+                    raise
+            else:
+                flash("Staff account created. Share its initial password securely with the staff member.", "success")
+                return redirect(url_for("staff.users"))
 
+    if request.method == "POST" and not is_cnic_search:
+        form.cnic.data = ""
     return render_template(
         "users.html",
         users=users_list,
@@ -868,6 +910,7 @@ def users():
         form=form,
         departments=department_names,
         protected_super_admin_email=current_app.config["SUPER_ADMIN_EMAIL"],
+        cnic_search_performed=is_cnic_search,
     )
 
 

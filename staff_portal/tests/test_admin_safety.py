@@ -2,6 +2,8 @@ import os
 import tempfile
 import unittest
 
+from sqlalchemy import text
+
 from app import create_app
 from app.extensions import db
 from app.models import Department, Notification, User
@@ -140,6 +142,32 @@ class AdminRoleMigrationTests(unittest.TestCase):
             "SIGNING_KEY_DIR": os.path.join(temporary_directory, "migration-keys"),
         })
 
+    def insert_legacy_user(self, name, email, role, active=True):
+        user = User(
+            name=name,
+            email=email,
+            role=role,
+            department="Finance Department",
+            active=active,
+        )
+        user.set_password("a-long-test-password")
+        db.session.execute(
+            text(
+                "INSERT INTO user "
+                "(name, email, password_hash, role, department, active, created_at) "
+                "VALUES (:name, :email, :password_hash, :role, :department, :active, CURRENT_TIMESTAMP)"
+            ),
+            {
+                "name": user.name,
+                "email": user.email,
+                "password_hash": user.password_hash,
+                "role": user.role,
+                "department": user.department,
+                "active": user.active,
+            },
+        )
+        db.session.commit()
+
     def test_migration_promotes_designated_account_and_demotes_other_super_admins(self):
         temporary_directory = tempfile.TemporaryDirectory()
         self.addCleanup(temporary_directory.cleanup)
@@ -157,23 +185,12 @@ class AdminRoleMigrationTests(unittest.TestCase):
         baseline = runner.invoke(args=["db", "upgrade", "08a5be3079bc"])
         self.assertEqual(0, baseline.exit_code, f"{baseline.output}\n{baseline.exception!r}")
         with migration_app.app_context():
-            designated = User(
-                name="Owais Pathan",
-                email=SUPER_ADMIN_EMAIL,
-                role=SUPER_ADMIN,
-                department="Finance Department",
-                active=False,
+            self.insert_legacy_user(
+                "Owais Pathan", SUPER_ADMIN_EMAIL, SUPER_ADMIN, active=False
             )
-            designated.set_password("a-long-test-password")
-            previous_admin = User(
-                name="Previous Super Admin",
-                email="previous@example.com",
-                role=SUPER_ADMIN,
-                department="Finance Department",
+            self.insert_legacy_user(
+                "Previous Super Admin", "previous@example.com", SUPER_ADMIN
             )
-            previous_admin.set_password("a-long-test-password")
-            db.session.add_all([designated, previous_admin])
-            db.session.commit()
 
         upgraded = runner.invoke(args=["db", "upgrade", "head"])
         self.assertEqual(0, upgraded.exit_code, f"{upgraded.output}\n{upgraded.exception!r}")

@@ -31,6 +31,11 @@
       {% for error in form.email.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
     </div>
     <div class="field-group">
+      {{ form.cnic.label }}
+      {{ form.cnic(placeholder="XXXXX-XXXXXXX-X") }}
+      {% for error in form.cnic.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    </div>
+    <div class="field-group">
       {{ form.department.label }}
       {{ form.department() }}
       {% for error in form.department.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
@@ -64,6 +69,19 @@
 <section class="panel">
   <div class="panel-heading"><div><h2>Staff directory</h2><p class="muted">Only {{ protected_super_admin_email }} is the designated Super Admin. Admin accounts cannot modify or replace this account.</p></div></div>
 
+  <form method="post" action="{{ url_for('staff.users') }}" style="padding:0 1.5rem 1rem;display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="cnic-search">Find by full CNIC</label>
+    <input id="cnic-search" name="cnic" type="text" inputmode="numeric" autocomplete="off"
+           maxlength="20" required placeholder="XXXXX-XXXXXXX-X"
+           style="max-width:220px;padding:0.45rem 0.75rem;border:1px solid var(--border,#d1d5db);border-radius:6px;">
+    <button class="button" type="submit" name="search_cnic" value="1">Search CNIC</button>
+    {% if cnic_search_performed %}
+    <a class="text-button" href="{{ url_for('staff.users') }}">Clear CNIC search</a>
+    {% endif %}
+    <small class="muted">CNICs are never shown in full.</small>
+  </form>
+
   {# Tab bar #}
   <div style="display:flex;border-bottom:2px solid var(--border,#e5e7eb);padding:0 1.5rem;flex-wrap:wrap;gap:0;">
     {% for role_key, role_label, color, bg in roles_config %}
@@ -95,7 +113,7 @@
     <div style="padding:1rem 1.5rem 0;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
       <input
         type="search"
-        placeholder="Search {{ role_label }}s by name, email or department…"
+        placeholder="Search {{ role_label }}s by name, email, department or masked CNIC…"
         autocomplete="off"
         oninput="filterTab(this, '{{ role_key }}')"
         style="flex:1;max-width:440px;padding:0.45rem 0.75rem;
@@ -109,6 +127,7 @@
           <tr>
             <th>Name</th>
             <th>Official email</th>
+            <th>CNIC</th>
             <th>Department</th>
             <th>Role</th>
             <th>Status</th>
@@ -119,9 +138,10 @@
         <tbody>
           {% for user in role_users %}
           {% set protected_user = user.role == 'super_admin' or user.email|lower == protected_super_admin_email %}
-          <tr data-search="{{ (user.name ~ ' ' ~ user.email ~ ' ' ~ user.department) | lower }}">
+          <tr data-search="{{ (user.name ~ ' ' ~ user.email ~ ' ' ~ user.department ~ ' ' ~ (user.masked_cnic or '')) | lower }}">
             <td style="font-weight:500;">{{ user.name }}</td>
             <td style="font-size:0.88rem;">{{ user.email }}</td>
+            <td style="font-size:0.88rem;">{{ user.masked_cnic or '—' }}</td>
             <td>
               {% if current_user.role != 'admin' or not protected_user %}
               <form method="post" action="{{ url_for('staff.update_user_department', user_id=user.id) }}" class="inline-form">
@@ -196,7 +216,7 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="7" class="empty-state">No {{ role_label }}s provisioned.</td></tr>
+          <tr><td colspan="8" class="empty-state">{% if cnic_search_performed %}No matching {{ role_label }} account.{% else %}No {{ role_label }}s provisioned.{% endif %}</td></tr>
           {% endfor %}
         </tbody>
       </table>

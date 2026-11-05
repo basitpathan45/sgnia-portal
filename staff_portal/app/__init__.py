@@ -51,6 +51,7 @@ def create_app(test_config=None):
             "SUPER_ADMIN_EMAIL",
             "owaispathan@sgnia.gos.pk",
         ).strip().lower(),
+        CNIC_LOOKUP_KEY=os.environ.get("CNIC_LOOKUP_KEY"),
         NOTIFICATION_UPLOAD_DIR=os.environ.get(
             "NOTIFICATION_UPLOAD_DIR",
             str(instance_dir / "notification-files"),
@@ -258,28 +259,40 @@ def create_app(test_config=None):
         """Interactively provision a staff account without storing demo passwords."""
         import getpass
 
+        from .cnic import cnic_fingerprint, normalize_cnic
         from .models import User
         from .permissions import ROLES, SUPER_ADMIN
 
         name = input("Full name: ").strip()
         email = input("Email: ").strip().lower()
         department = input("Department: ").strip()
+        normalized_cnic = normalize_cnic(input("CNIC (13 digits): "))
         print(f"Roles: {', '.join(sorted(ROLES))}")
         role = input("Role: ").strip().lower()
-        if not name or not email or not department or role not in ROLES:
-            raise SystemExit("Name, email, department, and a valid role are required.")
+        if not name or not email or not department or not normalized_cnic or role not in ROLES:
+            raise SystemExit("Name, email, department, a valid 13-digit CNIC, and a valid role are required.")
         if role == SUPER_ADMIN and email != app.config["SUPER_ADMIN_EMAIL"]:
             raise SystemExit("Only SUPER_ADMIN_EMAIL may be created as Super Admin.")
         if email == app.config["SUPER_ADMIN_EMAIL"] and role != SUPER_ADMIN:
             raise SystemExit("SUPER_ADMIN_EMAIL must be created with the Super Admin role.")
         if User.query.filter_by(email=email).first():
             raise SystemExit("A staff account with that email already exists.")
+        cnic_hash = cnic_fingerprint(normalized_cnic)
+        if User.query.filter_by(cnic_hash=cnic_hash).first():
+            raise SystemExit("A staff account with that CNIC already exists.")
 
         password = getpass.getpass("Initial password (at least 12 characters): ")
         if len(password) < 12:
             raise SystemExit("Password must contain at least 12 characters.")
 
-        user = User(name=name, email=email, department=department, role=role)
+        user = User(
+            name=name,
+            email=email,
+            department=department,
+            role=role,
+            cnic_hash=cnic_hash,
+            cnic_last4=normalized_cnic[-4:],
+        )
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
