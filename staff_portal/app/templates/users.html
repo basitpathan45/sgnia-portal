@@ -59,8 +59,8 @@
 
 {# ─── Staff Directory with Role Tabs ─────────────────────────────────────── #}
 {% set roles_config = [
-  ('admin',        'Admin',        '#166534', '#dcfce7'),
   ('super_admin', 'Super Admin',  '#166534', '#dcfce7'),
+  ('admin',        'Admin',        '#166534', '#dcfce7'),
   ('approver',    'Approver',     '#1e40af', '#dbeafe'),
   ('creator',     'Creator',      '#92400e', '#fef3c7'),
   ('auditor',     'Auditor',      '#6b21a8', '#f3e8ff'),
@@ -278,7 +278,7 @@
 
 <script>
 /* ---- Role tab keys ---- */
-const ROLE_KEYS = ['admin', 'super_admin', 'approver', 'creator', 'auditor'];
+const ROLE_KEYS = ['super_admin', 'admin', 'approver', 'creator', 'auditor'];
 const ROLE_COLORS = {
   admin:       '#166534',
   super_admin: '#166534',
