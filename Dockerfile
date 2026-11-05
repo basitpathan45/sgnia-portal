@@ -19,9 +19,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy all project files
 COPY . .
 
-# Hugging Face Spaces listens on port 7860
+# Preserve Hugging Face Spaces' default while honoring Render's injected PORT.
 ENV PORT=7860
 EXPOSE 7860
 
-# Start Flask with Gunicorn on 0.0.0.0:7860
-CMD ["gunicorn", "--chdir", "staff_portal", "--bind", "0.0.0.0:7860", "--workers", "2", "--timeout", "120", "run:app"]
+# Start Flask with Gunicorn on the platform-provided port.
+CMD ["sh", "-c", "gunicorn --chdir staff_portal --bind 0.0.0.0:${PORT:-7860} --workers 2 --timeout 120 run:app"]

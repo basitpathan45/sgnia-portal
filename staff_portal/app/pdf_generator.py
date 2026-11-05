@@ -297,7 +297,7 @@ def generate_official_sindh_pdf(
 
     qr_bytes = BytesIO()
     try:
-        qr_img.save(qr_bytes, format="PNG")
+        qr_img.save(qr_bytes)
     except TypeError:
         # qrcode.image.pure.PyPNGImage does not accept the 'format' keyword
         qr_img.save(qr_bytes)

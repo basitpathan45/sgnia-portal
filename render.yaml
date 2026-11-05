@@ -1,12 +1,12 @@
 services:
   - type: web
     name: sgnia-sindh-portal
-    env: python
+    env: docker
     region: singapore
     plan: free
     branch: main
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     envVars:
       - key: APP_ENV
         value: development

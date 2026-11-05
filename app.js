@@ -726,8 +726,11 @@ verificationPdfInput.addEventListener("change", async () => {
 // Set the total in the page and show the initial search results.
 const featuredTotal = document.querySelector("#total-records");
 const heroTotal = document.querySelector("#hero-total-records");
-if (featuredTotal) featuredTotal.textContent = records.length;
-if (heroTotal) heroTotal.textContent = records.length;
+const initialTotal = records.length > 0 || window.location.protocol === "file:"
+  ? String(records.length)
+  : "Loading…";
+if (featuredTotal) featuredTotal.textContent = initialTotal;
+if (heroTotal) heroTotal.textContent = initialTotal;
 populateDepartments();
 renderRecords();
 document.addEventListener("sgnia:public-records-loaded", () => {
@@ -740,6 +743,11 @@ document.addEventListener("sgnia:public-records-loaded", () => {
     verifyReferenceInput.value = initialReference;
     lookupArchiveRecord(initialReference);
   }
+});
+document.addEventListener("sgnia:public-records-unavailable", () => {
+  if (records.length > 0) return;
+  if (featuredTotal) featuredTotal.textContent = "—";
+  if (heroTotal) heroTotal.textContent = "—";
 });
 const initialReference = new URLSearchParams(window.location.search).get("verify");
 if (initialReference) {

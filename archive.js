@@ -194,7 +194,11 @@ pagination.addEventListener("click", (event) => {
 
 // Populate controls and display the first page of results.
 const archiveTotal = document.querySelector("#archive-total");
-if (archiveTotal) archiveTotal.textContent = records.length;
+if (archiveTotal) {
+  archiveTotal.textContent = records.length > 0 || window.location.protocol === "file:"
+    ? String(records.length)
+    : "Loading…";
+}
 populateDepartments();
 renderRecords();
 document.addEventListener("sgnia:public-records-loaded", () => {
@@ -202,4 +206,7 @@ document.addEventListener("sgnia:public-records-loaded", () => {
   populateDepartments();
   currentPage = 1;
   renderRecords();
+});
+document.addEventListener("sgnia:public-records-unavailable", () => {
+  if (records.length === 0 && archiveTotal) archiveTotal.textContent = "—";
 });

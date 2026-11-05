@@ -19,10 +19,10 @@
     <div style="display:flex;align-items:center;gap:0.5rem;">
       {% if engine_available %}
         <span class="dot-indicator dot-ready"></span>
-        <span style="font-size:0.8rem;color:var(--muted);">Image Scan OCR (Tesseract): Available</span>
+        <span style="font-size:0.8rem;color:var(--muted);">Image and scanned PDF OCR (Tesseract): Available</span>
       {% else %}
         <span class="dot-indicator dot-warning"></span>
-        <span style="font-size:0.8rem;color:var(--muted);">Image Scan OCR (Tesseract): Optional (Physical camera scans only)</span>
+        <span style="font-size:0.8rem;color:var(--muted);">Image and scanned PDF OCR unavailable: install Tesseract on this server</span>
       {% endif %}
     </div>
   </div>
@@ -31,7 +31,7 @@
     <div class="panel-heading">
       <div>
         <h2>Upload a document or scanned image for text extraction</h2>
-        <p class="muted">Digital PDFs, scanned documents, and image files (PDF, PNG, JPG, JPEG, WEBP, TIFF) are all supported.</p>
+        <p class="muted">Digital PDFs, scanned documents, and image files (PNG, JPG, JPEG, WEBP, TIFF, BMP) are supported. Image and scanned-PDF text recognition requires the local Tesseract OCR engine.</p>
       </div>
     </div>
     <form method="post" enctype="multipart/form-data" class="form-grid" style="padding:1.5rem;">

@@ -10,7 +10,7 @@ To include notifications published by staff, run the Flask portal in [`staff_por
 ## Included
 
 - Home page with a searchable preview of official source listings.
-- Separate public archive page with 55 records from the official Government of Sindh notification listing and direct links to the source-hosted PDFs.
+- Separate public archive page whose record count reflects the records currently loaded from the available sources.
 - Department names are assigned from the issuing department visible in each source document or the official portal listing title. Each department filter uses the supplied 29-department list.
 - Shared source data and department list in `records.js`.
 - Each record has a searchable `SGNIA-ARCH-###` archive reference created for this prototype. This is not a Government reference number.
@@ -21,7 +21,7 @@ To include notifications published by staff, run the Flask portal in [`staff_por
 - Public lookup and filtering by archive reference, transcribed official reference, portal listing number, or title search the same source-backed records.
 - When hosted through the Flask app, the public homepage and archive also show staff-workflow notifications only after they have been approved and published. Each such record links to its uploaded PDF and is labeled as an SGNIA archive record, not an official Government source.
 - QR scanning from a camera or uploaded image uses the browser's `BarcodeDetector` when available, with a pinned jsQR fallback for other browsers. Scanned portal references, archive references, and exact official PDF links are matched against the archive.
-- The 55 bundled Government portal listings have project QR images that open their source PDFs. Staff-published SGNIA records get individual QR codes that open the record lookup in the running Flask archive; those codes are generated when requested and are available from the public archive or staff digital archive.
+- Staff-published SGNIA records get individual QR codes that open the record lookup in the running Flask archive; those codes are generated when requested and are available from the public archive or staff digital archive.
 - Responsive layout and keyboard-accessible form controls.
 
 ## Where to make changes
@@ -54,8 +54,8 @@ The project proposal identifies Flask, Jinja2, Bootstrap 5, and MySQL as the int
 
 ## Internal staff workspace
 
-The separate [Flask staff portal](staff_portal/README.md) provides the internal workflow with the supplied four-role RBAC matrix, authenticated staff sessions, notification drafting/review/publication, a hash-chained audit trail, project digital signatures, and human-reviewed local PDF text extraction/OCR. Its default local database is SQLite; it supports MySQL through `DATABASE_URL`.
+The separate [Flask staff portal](staff_portal/README.md) provides the internal workflow with the supplied four-role RBAC matrix, authenticated staff sessions, notification drafting/review/publication, a hash-chained audit trail, project digital signatures, and human-reviewed local document text extraction/OCR. Its default local database is SQLite; it supports MySQL through `DATABASE_URL`.
 
-The public End User frontend is served by the Flask app at `/`; the homepage and archive both link to protected staff sign-in at `/login`, and the sign-in page links back to the public archive. Public and staff features share one website/server while keeping separate routes and permissions. Versioned amendments are reviewed before public replacement. Project signatures are not Government PKI signatures, OCR requires a local Tesseract installation for scanned PDFs, and the audit chain detects tampering but is not tamper-proof. This is still a university prototype, not an official Government service.
+The public End User frontend is served by the Flask app at `/`; the homepage and archive both link to protected staff sign-in at `/login`, and the sign-in page links back to the public archive. Public and staff features share one website/server while keeping separate routes and permissions. Versioned amendments are reviewed before public replacement. Project signatures are not Government PKI signatures, OCR requires a local Tesseract installation for images and scanned PDFs, and the audit chain detects tampering but is not tamper-proof. This is still a university prototype, not an official Government service.
 
 The Government of Sindh emblem in the header and footer is a local copy of the logo served by the [official Government of Sindh website](https://www.sindh.gov.pk/images/government-of-sindh-pakistan-logo.png).

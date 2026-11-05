@@ -398,16 +398,16 @@ def process_approval(notification_id, action):
 def ocr():
     form = OcrUploadForm()
     if form.validate_on_submit():
-        uploaded_pdf = form.document.data
-        pdf_size = uploaded_pdf.stream.seek(0, 2)
-        uploaded_pdf.stream.seek(0)
-        if pdf_size > current_app.config["MAX_NOTIFICATION_PDF_BYTES"]:
-            flash("The PDF must be no larger than 16 MB.", "danger")
+        uploaded_document = form.document.data
+        document_size = uploaded_document.stream.seek(0, 2)
+        uploaded_document.stream.seek(0)
+        if document_size > current_app.config["MAX_NOTIFICATION_PDF_BYTES"]:
+            flash("The uploaded file must be no larger than 16 MB.", "danger")
             return render_template("ocr.html", engine_available=ocr_engine_available(), form=form)
-        file_bytes = uploaded_pdf.stream.read()
+        file_bytes = uploaded_document.stream.read()
         try:
             extracted_text, extraction_method, pdf_bytes = extract_document_text(
-                file_bytes, filename=uploaded_pdf.filename
+                file_bytes, filename=uploaded_document.filename
             )
         except OcrError as error:
             flash(str(error), "danger")

@@ -49,7 +49,6 @@ const departments = [
 // Official portal listing data.
 // Add new source-backed entries here; do not use portal listing numbers as document references.
 const records = [
- 
 ];
 
 // Used only if a record's department is not present in the department list.

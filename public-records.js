@@ -13,7 +13,11 @@ function resolveShortDepartment(name, code) {
 }
 
 function mergeRecords(newRecords) {
-  if (!Array.isArray(newRecords) || newRecords.length === 0) return;
+  if (!Array.isArray(newRecords)) return;
+  if (newRecords.length === 0) {
+    document.dispatchEvent(new CustomEvent("sgnia:public-records-loaded"));
+    return;
+  }
 
   const existingMap = new Map();
   records.forEach((r, index) => {
@@ -100,25 +104,33 @@ async function loadLiveRecordsFromSupabase() {
 }
 
 async function loadPublishedFlaskRecords() {
-  if (window.location.protocol === "file:") return;
+  if (window.location.protocol === "file:") return false;
 
   try {
     const response = await fetch("/api/public/notifications", {
       headers: { Accept: "application/json" },
     });
-    if (!response.ok) return;
+    if (!response.ok) return false;
 
     const publishedRecords = await response.json();
+    if (!Array.isArray(publishedRecords)) {
+      throw new TypeError("The public notifications API did not return a record list.");
+    }
     mergeRecords(publishedRecords);
+    return true;
   } catch (error) {
-    console.debug("Flask backend endpoint not reachable; keeping current records.");
+    console.warn("Could not load published records from the Flask API.", error);
+    return false;
   }
 }
 
 async function initializePublicRecords() {
   const supabaseSuccess = await loadLiveRecordsFromSupabase();
   if (!supabaseSuccess) {
-    await loadPublishedFlaskRecords();
+    const flaskSuccess = await loadPublishedFlaskRecords();
+    if (!flaskSuccess && window.location.protocol !== "file:") {
+      document.dispatchEvent(new CustomEvent("sgnia:public-records-unavailable"));
+    }
   }
 }
 
