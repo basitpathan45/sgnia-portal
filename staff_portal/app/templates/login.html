@@ -15,7 +15,7 @@
       <div class="field-group">{{ form.password.label }}{{ form.password(autocomplete="current-password", placeholder="Enter your password") }}{% for error in form.password.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
       {{ form.submit(class_="button primary full") }}
     </form>
-    <p class="login-note">Accounts are created by the project administrator. There are no public demo passwords.</p>
+    <p class="login-note">Accounts are provisioned by the Government. There are no public demo credentials</p>
     <a class="login-back-link" href="{{ url_for('public.homepage') }}">← Return to public archive</a>
   </section>
 {% endblock %}
