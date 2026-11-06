@@ -173,7 +173,7 @@ td { padding: 12px 14px; border-top: 1px solid #eef2ef; font-size: 10px; line-he
 .denied { color: #87918a; }
 .error-panel { max-width: 620px; margin: 50px auto; padding: 26px; }
 .error-panel h1 { margin: 9px 0; }
-.login-shell { display: grid; min-height: 100vh; place-items: center; padding: 25px; background: radial-gradient(circle at 15% 15%,#e0efe4,transparent 38%),var(--page); }
+.login-shell { display: grid; min-height: 100vh; place-items: center; padding: 25px; background: radial-gradient(circle at 15% 15%,rgba(224,239,228,.55),transparent 38%),linear-gradient(rgba(245,248,246,.91),rgba(245,248,246,.91)),url("ajrak-pattern.webp") center/cover no-repeat; }
 .login-card { width: min(430px,100%); padding: 32px; background: #fff; border: 1px solid var(--line); border-radius: 11px; box-shadow: 0 18px 55px #18362412; }
 .login-brand { margin-bottom: 33px; color: var(--forest); }
 .login-card h1 { margin: 8px 0; font-size: 25px; letter-spacing: -.7px; }
@@ -237,7 +237,7 @@ body.dark .notice         { background: #2a2210; border-color: #5a4a20; color: #
 body.dark .flash.success  { background: #0f2218; border-color: #1e4a30; color: #5ecf8a; }
 body.dark .flash.danger   { background: #2a0f0f; border-color: #5a2020; color: #e08080; }
 body.dark .flash.warning  { background: #2a2010; border-color: #5a4820; color: #d4a840; }
-body.dark .login-shell    { background: radial-gradient(circle at 15% 15%,#1a3327,transparent 38%),var(--page); }
+body.dark .login-shell    { background: radial-gradient(circle at 15% 15%,#1a3327aa,transparent 38%),linear-gradient(rgba(8,39,31,.91),rgba(8,39,31,.91)),url("ajrak-pattern.webp") center/cover no-repeat; }
 body.dark .login-card     { background: #192620; border-color: #253328; }
 body.dark input,
 body.dark select,
