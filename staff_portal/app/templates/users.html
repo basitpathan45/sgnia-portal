@@ -59,11 +59,11 @@
 
 {# ─── Staff Directory with Role Tabs ─────────────────────────────────────── #}
 {% set roles_config = [
-  ('super_admin', 'Super Admin',  '#166534', '#dcfce7'),
-  ('admin',        'Admin',        '#166534', '#dcfce7'),
-  ('approver',    'Approver',     '#1e40af', '#dbeafe'),
-  ('creator',     'Creator',      '#92400e', '#fef3c7'),
-  ('auditor',     'Auditor',      '#6b21a8', '#f3e8ff'),
+  ('super_admin', 'Super Admin'),
+  ('admin', 'Admin'),
+  ('approver', 'Approver'),
+  ('creator', 'Creator'),
+  ('auditor', 'Auditor'),
 ] %}
 
 <section class="panel">
@@ -84,21 +84,16 @@
 
   {# Tab bar #}
   <div style="display:flex;border-bottom:2px solid var(--border,#e5e7eb);padding:0 1.5rem;flex-wrap:wrap;gap:0;">
-    {% for role_key, role_label, color, bg in roles_config %}
+    {% for role_key, role_label in roles_config %}
     {% set role_users = users | selectattr('role', 'equalto', role_key) | list %}
     <button
       id="tab-btn-{{ role_key }}"
-      onclick="switchTab('{{ role_key }}')"
-      style="padding:0.7rem 1.2rem;border:none;background:none;cursor:pointer;
-             font-weight:600;font-size:0.88rem;display:flex;align-items:center;gap:0.4rem;
-             border-bottom:3px solid {% if loop.first %}{{ color }}{% else %}transparent{% endif %};
-             color:{% if loop.first %}{{ color }}{% else %}var(--muted,#6b7280){% endif %};
-             margin-bottom:-2px;transition:all 0.15s;">
+      class="role-tab-button role-color-{{ role_key }}{% if loop.first %} is-active{% endif %}"
+      data-action="switch-tab"
+      data-role="{{ role_key }}">
       {{ role_label }}
       <span id="badge-{{ role_key }}"
-            style="border-radius:999px;padding:0.1rem 0.55rem;font-size:0.72rem;font-weight:700;
-                   background:{% if loop.first %}{{ color }}{% else %}#e5e7eb{% endif %};
-                   color:{% if loop.first %}#fff{% else %}#374151{% endif %};">
+            class="role-tab-badge role-color-{{ role_key }}{% if loop.first %} is-active{% endif %}">
         {{ role_users | length }}
       </span>
     </button>
@@ -106,16 +101,17 @@
   </div>
 
   {# Tab contents #}
-  {% for role_key, role_label, color, bg in roles_config %}
+  {% for role_key, role_label in roles_config %}
   {% set role_users = users | selectattr('role', 'equalto', role_key) | list %}
-  <div id="tab-{{ role_key }}" style="display:{% if loop.first %}block{% else %}none{% endif %};">
+  <div id="tab-{{ role_key }}" class="role-tab-content{% if loop.first %} is-active{% endif %}">
     {# Per-tab search bar #}
     <div style="padding:1rem 1.5rem 0;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
       <input
         type="search"
         placeholder="Search {{ role_label }}s by name, email, department or masked CNIC…"
         autocomplete="off"
-        oninput="filterTab(this, '{{ role_key }}')"
+        data-action="filter-tab"
+        data-role="{{ role_key }}"
         style="flex:1;max-width:440px;padding:0.45rem 0.75rem;
                border:1px solid var(--border,#d1d5db);border-radius:6px;font-size:0.9rem;">
       <span id="count-{{ role_key }}" style="font-size:0.82rem;color:var(--muted,#6b7280);"></span>
@@ -171,9 +167,7 @@
               {% endif %}
             </td>
             <td>
-              <span style="display:inline-block;padding:0.2rem 0.6rem;border-radius:999px;
-                           font-size:0.75rem;font-weight:600;
-                           background:{{ bg }};color:{{ color }};">
+              <span class="role-status role-color-{{ user.role }}">
                 {{ 'Active' if user.active else 'Inactive' }}
               </span>
             </td>
@@ -184,14 +178,14 @@
               {% if user.id != current_user.id and (current_user.role != 'admin' or not protected_user) %}
               <div style="display:flex;gap:0.35rem;flex-wrap:wrap;align-items:center;">
                 {# Edit Name #}
-                <button class="text-button" type="button"
-                        onclick="openEditName({{ user.id }}, '{{ user.name | e }}')">
+                <button class="text-button" type="button" data-action="edit-name"
+                        data-user-id="{{ user.id }}" data-user-name="{{ user.name }}">
                   Edit name
                 </button>
                 <span style="color:var(--border,#d1d5db);">|</span>
                 {# Reset Password #}
-                <button class="text-button" type="button"
-                        onclick="openResetPwd({{ user.id }}, '{{ user.name | e }}')">
+                <button class="text-button" type="button" data-action="reset-password"
+                        data-user-id="{{ user.id }}" data-user-name="{{ user.name }}">
                   Reset pwd
                 </button>
                 <span style="color:var(--border,#d1d5db);">|</span>
@@ -205,7 +199,7 @@
                 <span style="color:var(--border,#d1d5db);">|</span>
                 {# Delete #}
                 <form method="post" action="{{ url_for('staff.delete_user', user_id=user.id) }}"
-                      onsubmit="return confirm('Permanently delete {{ user.name | e }}?\n\nThis action cannot be undone.');">
+                      data-confirm-delete="{{ user.name }}">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button class="text-button" type="submit" style="color:#dc2626;">Delete</button>
                 </form>
@@ -279,13 +273,6 @@
 <script>
 /* ---- Role tab keys ---- */
 const ROLE_KEYS = ['super_admin', 'admin', 'approver', 'creator', 'auditor'];
-const ROLE_COLORS = {
-  admin:       '#166534',
-  super_admin: '#166534',
-  approver:    '#1e40af',
-  creator:     '#92400e',
-  auditor:     '#6b21a8',
-};
 
 /* ---- Switch tab ---- */
 function switchTab(activeKey) {
@@ -294,15 +281,9 @@ function switchTab(activeKey) {
     const btn     = document.getElementById('tab-btn-' + key);
     const badge   = document.getElementById('badge-' + key);
     const isActive = (key === activeKey);
-    if (content) content.style.display = isActive ? 'block' : 'none';
-    if (btn) {
-      btn.style.borderBottomColor = isActive ? ROLE_COLORS[key] : 'transparent';
-      btn.style.color = isActive ? ROLE_COLORS[key] : 'var(--muted,#6b7280)';
-    }
-    if (badge) {
-      badge.style.background = isActive ? ROLE_COLORS[key] : '#e5e7eb';
-      badge.style.color = isActive ? '#fff' : '#374151';
-    }
+    if (content) content.classList.toggle('is-active', isActive);
+    if (btn) btn.classList.toggle('is-active', isActive);
+    if (badge) badge.classList.toggle('is-active', isActive);
   });
 }
 
@@ -356,5 +337,35 @@ function openEditName(userId, currentName) {
     inp.select();
   }, 80);
 }
+
+document.addEventListener('click', event => {
+  if (!(event.target instanceof Element)) return;
+  const trigger = event.target.closest('[data-action]');
+  if (!trigger) return;
+
+  if (trigger.dataset.action === 'switch-tab') {
+    switchTab(trigger.dataset.role);
+  } else if (trigger.dataset.action === 'edit-name') {
+    openEditName(trigger.dataset.userId, trigger.dataset.userName);
+  } else if (trigger.dataset.action === 'reset-password') {
+    openResetPwd(trigger.dataset.userId, trigger.dataset.userName);
+  }
+});
+
+document.addEventListener('input', event => {
+  const input = event.target;
+  if (input.matches('[data-action="filter-tab"]')) {
+    filterTab(input, input.dataset.role);
+  }
+});
+
+document.addEventListener('submit', event => {
+  const form = event.target;
+  if (form.hasAttribute('data-confirm-delete')
+      && !confirm('Permanently delete ' + form.dataset.confirmDelete
+        + '?\n\nThis action cannot be undone.')) {
+    event.preventDefault();
+  }
+});
 </script>
 {% endblock %}

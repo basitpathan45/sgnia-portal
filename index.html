@@ -180,40 +180,63 @@
         project prototype, not a Government of Sindh service.</p>
     </section>
 
-    <!-- Find a portal listing and open its official PDF. -->
+    <!-- Search archive records and verify downloaded PDFs locally. -->
     <section class="verify-section" id="verify">
       <div class="container verify-inner">
         <div class="verify-copy">
           <div class="section-kicker light-kicker">PUBLIC RECORD LOOKUP</div>
-          <h2>Find a document<br><span>at its source.</span></h2>
-          <p>Search an archive reference, official document reference or portal listing number to find its PDF.</p>
-          <div class="verify-assurance"><span aria-hidden="true">✓</span> Public lookup · No sign-in required</div>
+          <h2>Find an<br><span>Archive Record</span></h2>
+          <p>Find a published record, then check its downloaded PDF locally or scan its QR code.</p>
         </div>
         <form class="verify-card" id="verify-form">
-          <div class="verify-card-icon" aria-hidden="true">⌕</div>
-          <h3>Find an archive record</h3>
-          <p>Enter a portal listing number or a document title.</p>
-          <label class="field verify-field" for="verify-reference">
-            <span class="field-label">Archive ref, official ref or title</span>
+          <div class="verify-search-row">
+            <svg class="verify-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.8" cy="10.8" r="6.8"></circle>
+              <path d="m16 16 4.5 4.5"></path>
+            </svg>
+            <label class="visually-hidden" for="verify-reference">Archive reference, official reference or title</label>
             <input id="verify-reference" name="verify-reference" type="text"
-              placeholder="e.g. SGNIA-ARCH-005 or SOVI(SGA&CD)" required>
-          </label>
-          <button class="verify-button" type="submit">Find record <span aria-hidden="true">→</span></button>
+              placeholder="Enter a portal listing number or a document title..." required>
+            <button class="verify-button" type="submit">Search <span aria-hidden="true">→</span></button>
+          </div>
           <div id="verify-result" class="verify-result" aria-live="polite" hidden></div>
+          <div class="verify-or" aria-hidden="true"><span>OR</span></div>
           <div class="verify-upload-section">
-            <label class="field verify-field verify-upload-label" for="verify-pdf">
-              <span class="field-label">📄 Document Authenticity Verification (PDF)</span>
-              <span class="field-sublabel">Select a downloaded or received notification PDF to check if it is genuine or
-                fake:</span>
-              <input id="verify-pdf" name="verify-pdf" type="file" accept=".pdf,application/pdf">
+            <label class="verify-upload-label upload-dropzone" id="verify-upload-dropzone" for="verify-pdf">
+              <span class="upload-icon" aria-hidden="true">↑</span>
+              <span class="upload-copy">
+                <strong>Upload a Document</strong>
+                <span>Drag &amp; drop a PDF here or <span class="upload-choose">choose a file</span></span>
+                <small id="verify-file-name" aria-live="polite">PDF only · Up to 16 MB</small>
+              </span>
+              <input class="visually-hidden" id="verify-pdf" name="verify-pdf" type="file"
+                accept=".pdf,application/pdf" aria-label="Choose a PDF document to verify">
             </label>
             <p class="verify-security-note">
               <span class="security-badge-icon" aria-hidden="true">🔒</span>
-              <span><strong>Secure Local Verification:</strong> Document is verified directly inside your browser. No
-                files are uploaded to any server.</span>
+              <span><strong>Secure Local Verification:</strong> Your document is checked in this browser. No files are
+                uploaded to a server.</span>
             </p>
           </div>
-          <div class="qr-info-box" id="qr-info-box">
+          <div class="verify-assurance">
+            <span class="assurance-icon" aria-hidden="true">✓</span>
+            <span><strong>Find notifications in published records.</strong><small>Open an available source PDF or verify
+                an SGNIA PDF locally.</small></span>
+          </div>
+          <div class="verify-guide">
+            <div class="guide-heading">
+              <span class="guide-icon" aria-hidden="true">▤</span>
+              <span><strong>Quick Guide</strong><small>Follow these simple steps to find your document:</small></span>
+            </div>
+            <div class="guide-steps">
+              <div class="guide-step"><span class="guide-step-icon" aria-hidden="true">1</span><span><strong>Enter search details</strong><small>Number, reference or title</small></span></div>
+              <span class="guide-arrow" aria-hidden="true">›</span>
+              <div class="guide-step"><span class="guide-step-icon" aria-hidden="true">2</span><span><strong>Find your record</strong><small>From the search results</small></span></div>
+              <span class="guide-arrow" aria-hidden="true">›</span>
+              <div class="guide-step"><span class="guide-step-icon" aria-hidden="true">3</span><span><strong>View or download</strong><small>Open the document</small></span></div>
+            </div>
+          </div>
+          <!-- <div class="qr-info-box" id="qr-info-box">
             <div class="qr-info-header">
               <span class="qr-info-badge">📱 SMARTPHONE QR VERIFICATION</span>
             </div>
@@ -228,7 +251,9 @@
               <div class="qr-step"><span class="step-num">3</span><span>Instantly verify the document authenticity and
                   SHA-256 fingerprint</span></div>
             </div>
-          </div>
+          </div> -->
+          <p class="verify-authenticity-note"><span aria-hidden="true">✓</span> <strong>Document Authenticity Verification (PDF):</strong>
+            Search for a published SGNIA record first, then choose its downloaded PDF above. The fingerprint is checked locally in your browser.</p>
           <div class="verify-footnote"><span aria-hidden="true">ⓘ</span> SGNIA archive refs are project search IDs, not
             Government reference numbers. Official document refs are shown only when readable in the source PDF; this
             lookup does not verify a separate file.</div>

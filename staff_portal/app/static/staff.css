@@ -96,6 +96,53 @@ h1, h2, p { margin-top: 0; }
 .text-link, .text-button { color: #347653; font-size: 10px; font-weight: 700; }
 .text-button { padding: 0; background: none; border: 0; cursor: pointer; }
 .table-wrap { overflow-x: auto; }
+.role-tab-button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: -2px;
+  padding: 0.7rem 1.2rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.role-tab-button.is-active { border-bottom-color: currentColor; }
+.role-tab-badge {
+  padding: 0.1rem 0.55rem;
+  color: #374151;
+  background: #e5e7eb;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.role-tab-badge.is-active { color: #fff; }
+.role-tab-content { display: none; }
+.role-tab-content.is-active { display: block; }
+.role-status {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.role-color-super_admin, .role-color-admin { color: #166534; }
+.role-tab-badge.role-color-super_admin.is-active,
+.role-tab-badge.role-color-admin.is-active { background: #166534; }
+.role-status.role-color-super_admin, .role-status.role-color-admin { background: #dcfce7; }
+.role-color-approver { color: #1e40af; }
+.role-tab-badge.role-color-approver.is-active { background: #1e40af; }
+.role-status.role-color-approver { background: #dbeafe; }
+.role-color-creator { color: #92400e; }
+.role-tab-badge.role-color-creator.is-active { background: #92400e; }
+.role-status.role-color-creator { background: #fef3c7; }
+.role-color-auditor { color: #6b21a8; }
+.role-tab-badge.role-color-auditor.is-active { background: #6b21a8; }
+.role-status.role-color-auditor { background: #f3e8ff; }
 table { width: 100%; border-collapse: collapse; text-align: left; }
 th { padding: 11px 14px; color: #738178; background: #fafcfb; font-size: 9px; letter-spacing: .4px; text-transform: uppercase; white-space: nowrap; }
 td { padding: 12px 14px; border-top: 1px solid #eef2ef; font-size: 10px; line-height: 1.45; }
@@ -198,6 +245,13 @@ body.dark textarea        { background: #1a2a22; border-color: #2d4035; color: v
 body.dark .button.secondary { background: #1a2a22; border-color: #253328; color: #8faa96; }
 body.dark .text-link,
 body.dark .text-button    { color: #52c285; }
+body.dark .role-status.role-color-super_admin,
+body.dark .role-status.role-color-admin { color: #a7f3d0; background: #064e3b; }
+body.dark .role-status.role-color-approver { color: #bfdbfe; background: #1e3a8a; }
+body.dark .role-status.role-color-creator { color: #fde68a; background: #78350f; }
+body.dark .role-status.role-color-auditor { color: #e9d5ff; background: #581c87; }
+body.dark .role-tab-badge { color: #d1d5db; background: #374151; }
+body.dark .role-tab-badge.is-active { color: #fff; }
 body.dark .eyebrow        { color: #52a070; }
 body.dark .reference      { color: #52c285; }
 body.dark .panel, body.dark .stat-card { box-shadow: 0 3px 12px #00000030; }

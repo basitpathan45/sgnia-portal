@@ -613,6 +613,28 @@ verifyForm.addEventListener("submit", (event) => {
 });
 
 const verificationPdfInput = document.querySelector("#verify-pdf");
+const verificationDropzone = document.querySelector("#verify-upload-dropzone");
+const verificationFileName = document.querySelector("#verify-file-name");
+const updateVerificationFileName = () => {
+  verificationFileName.textContent = verificationPdfInput.files[0]?.name || "PDF only · Up to 16 MB";
+};
+
+verificationPdfInput.addEventListener("change", updateVerificationFileName);
+verificationDropzone.addEventListener("dragover", (event) => {
+  event.preventDefault();
+  verificationDropzone.classList.add("is-dragging");
+});
+verificationDropzone.addEventListener("dragleave", () => {
+  verificationDropzone.classList.remove("is-dragging");
+});
+verificationDropzone.addEventListener("drop", (event) => {
+  event.preventDefault();
+  verificationDropzone.classList.remove("is-dragging");
+  if (!event.dataTransfer.files.length) return;
+  verificationPdfInput.files = event.dataTransfer.files;
+  verificationPdfInput.dispatchEvent(new Event("change", { bubbles: true }));
+});
+
 verificationPdfInput.addEventListener("change", async () => {
   const file = verificationPdfInput.files[0];
   if (!file) return;
