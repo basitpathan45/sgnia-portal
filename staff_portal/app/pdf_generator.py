@@ -1,29 +1,8 @@
-"""
-pdf_generator.py — Official Sindh Government PDF Auto-Generation Engine
-=======================================================================
-Generates A4 PDFs matching real Sindh Government departmental orders,
-notifications, circulars, letters, and advisories.
-
-Layout (top → bottom):
-    • Sindh Government emblem (logo) — top-center
-    • "GOVERNMENT OF SINDH" — bold, centered
-    • Department name — bold, centered
-    • "Karachi, dated the DD Month, YYYY" — italic, right-aligned
-    • Heading e.g. "O R D E R" — spaced, bold, centered + underline
-    • Reference number — bold, left-aligned
-    • Subject — bold, left-aligned (optional)
-    • Body text — times-roman, left-aligned (multi-paragraph)
-    • Signatory block — bottom-right
-    • Secure QR code — bottom-left with labels
-
-QR code encodes the SGNIA public verification URL for the document
-reference, allowing physical paper holders to scan and authenticate.
-"""
+"""Generate clearly labeled SGNIA project demonstration PDFs."""
 
 from __future__ import annotations
 
 import hashlib
-import logging
 from datetime import date
 from io import BytesIO
 from pathlib import Path
@@ -36,9 +15,6 @@ except ImportError:
 
 import qrcode
 import qrcode.constants
-from PIL import Image
-
-log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Sindh Government brand colours
@@ -48,7 +24,7 @@ _SINDH_GREEN_LABEL = (0.1, 0.35, 0.2)       # text label colour
 _BLACK = (0, 0, 0)
 _DARK_GREY = (0.2, 0.2, 0.2)
 _MID_GREY = (0.3, 0.3, 0.3)
-_LIGHT_GREY = (0.4, 0.4, 0.4)
+_WARNING_RED = (0.65, 0.08, 0.08)
 
 # ---------------------------------------------------------------------------
 # Page dimensions (A4 in PDF points: 1 pt = 1/72 inch)
@@ -61,29 +37,37 @@ _MARGIN_R = 545   # _PAGE_W - 50
 
 def _draw_continuation_header(page, reference: str, department: str) -> None:
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 75, _MARGIN_R, 98),
-        "GOVERNMENT OF SINDH",
+        pymupdf.Rect(_MARGIN_L, 68, _MARGIN_R, 88),
+        "SGNIA PROJECT DEMONSTRATION",
         fontname="helv",
-        fontsize=12,
-        color=_BLACK,
+        fontsize=11,
+        color=_SINDH_GREEN,
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 99, _MARGIN_R, 121),
-        (department or "GOVERNMENT OF SINDH").upper(),
+        pymupdf.Rect(_MARGIN_L, 89, _MARGIN_R, 108),
+        "NOT AN OFFICIAL GOVERNMENT DOCUMENT",
         fontname="helv",
-        fontsize=10.5,
+        fontsize=10,
+        color=_WARNING_RED,
+        align=pymupdf.TEXT_ALIGN_CENTER,
+    )
+    page.insert_textbox(
+        pymupdf.Rect(_MARGIN_L, 109, _MARGIN_R, 128),
+        f"Department entered: {(department or 'Not specified').upper()}",
+        fontname="helv",
+        fontsize=9,
         color=_BLACK,
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.draw_line(
-        pymupdf.Point(_MARGIN_L, 124),
-        pymupdf.Point(_MARGIN_R, 124),
+        pymupdf.Point(_MARGIN_L, 132),
+        pymupdf.Point(_MARGIN_R, 132),
         color=_BLACK,
         width=0.5,
     )
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 130, _MARGIN_R, 150),
+        pymupdf.Rect(_MARGIN_L, 136, _MARGIN_R, 154),
         f"{reference} (continued)",
         fontname="times-italic",
         fontsize=9,
@@ -96,32 +80,23 @@ def _draw_pdf_footer(
     page,
     reference: str,
     host_url: str,
-    department: str,
     include_signatory: bool,
 ) -> None:
     if include_signatory:
         sig_top = _PAGE_H - 185
         page.insert_textbox(
             pymupdf.Rect(300, sig_top, _MARGIN_R, sig_top + 25),
-            "-SECRETARY TO GOVT. OF SINDH-",
+            "Project workflow preview",
             fontname="times-bold",
-            fontsize=10,
+            fontsize=11,
             color=_BLACK,
             align=pymupdf.TEXT_ALIGN_CENTER,
         )
         page.insert_textbox(
             pymupdf.Rect(300, sig_top + 45, _MARGIN_R, sig_top + 65),
-            "SECTION OFFICER",
-            fontname="times-bold",
-            fontsize=9.5,
-            color=_DARK_GREY,
-            align=pymupdf.TEXT_ALIGN_CENTER,
-        )
-        page.insert_textbox(
-            pymupdf.Rect(300, sig_top + 65, _MARGIN_R, sig_top + 85),
-            department,
-            fontname="times-italic",
-            fontsize=8.5,
+            "No Government signatory is represented",
+            fontname="helv",
+            fontsize=8,
             color=_MID_GREY,
             align=pymupdf.TEXT_ALIGN_CENTER,
         )
@@ -150,7 +125,7 @@ def _draw_pdf_footer(
     lbl_x0 = _MARGIN_L + 80
     page.insert_textbox(
         pymupdf.Rect(lbl_x0, qr_top + 5, 330, qr_top + 18),
-        "OFFICIAL SINDH GOVERNMENT NOTIFICATION",
+        "SGNIA PROJECT DEMONSTRATION",
         fontname="helv",
         fontsize=6.5,
         color=_SINDH_GREEN_LABEL,
@@ -164,17 +139,17 @@ def _draw_pdf_footer(
     )
     page.insert_textbox(
         pymupdf.Rect(lbl_x0, qr_top + 32, 330, qr_top + 44),
-        "Scan QR code to verify authenticity",
+        "Scan to open the project archive record",
         fontname="helv",
         fontsize=6,
         color=_MID_GREY,
     )
     page.insert_textbox(
         pymupdf.Rect(lbl_x0, qr_top + 45, 330, qr_top + 56),
-        "Sindh Government Notification Issuing Authority (SGNIA)",
+        "This QR code does not prove Government issuance",
         fontname="helv",
         fontsize=5.5,
-        color=_LIGHT_GREY,
+        color=_WARNING_RED,
     )
     page.draw_line(
         pymupdf.Point(_MARGIN_L, qr_top - 5),
@@ -235,7 +210,7 @@ def generate_official_sindh_pdf(
     logo_path: Optional[Path] = None,
 ) -> str:
     """
-    Generate an official Sindh Government PDF document.
+    Generate a project demonstration PDF, not an official Government document.
 
     Parameters
     ----------
@@ -245,11 +220,11 @@ def generate_official_sindh_pdf(
     department        : Full department name (e.g. "Finance Department").
     subject           : One-line subject line.
     body              : Full body text (paragraphs separated by newline).
-    document_date     : Effective date of the document.
-    official_reference: Optional official file/reference number printed on the PDF.
+    document_date     : User-entered document date.
+    official_reference: Optional user-supplied reference, printed as unverified.
     destination_path  : Absolute path where the PDF file will be written.
     host_url          : Base URL of the SGNIA portal (used in the QR verification link).
-    logo_path         : Path to the Sindh Government emblem PNG. Auto-resolved if None.
+    logo_path         : Retained for compatibility; Government emblems are not used.
 
     Returns
     -------
@@ -258,82 +233,59 @@ def generate_official_sindh_pdf(
     """
     destination_path = Path(destination_path)
 
-    # ---- Resolve logo path ------------------------------------------------
-    if logo_path is None:
-        # From staff_portal/app/pdf_generator.py → root is two levels up
-        logo_path = Path(__file__).resolve().parents[2] / "assets" / "government-of-sindh-logo.png"
-
     # ---- Create document and A4 page --------------------------------------
     doc = pymupdf.open()
     page = doc.new_page(width=_PAGE_W, height=_PAGE_H)
 
-    # ------------------------------------------------------------------ #
-    # 1. Sindh Government Emblem (top-center)                             #
-    # ------------------------------------------------------------------ #
-    if logo_path.is_file():
-        try:
-            pil_img = Image.open(logo_path).convert("RGBA")
-            img_bytes = BytesIO()
-            pil_img.save(img_bytes, format="PNG")
-            logo_rect = pymupdf.Rect(272, 35, 323, 95)   # 51×60 pt, centered
-            page.insert_image(logo_rect, stream=img_bytes.getvalue())
-        except Exception as exc:
-            log.warning("PDF generator: could not insert logo — %s", exc)
-
-    # ------------------------------------------------------------------ #
-    # 2. Header: "GOVERNMENT OF SINDH" + department                       #
-    # ------------------------------------------------------------------ #
+    # Keep project-generated output visually distinct from official records.
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 100, _MARGIN_R, 124),
-        "GOVERNMENT OF SINDH",
+        pymupdf.Rect(_MARGIN_L, 38, _MARGIN_R, 62),
+        "SGNIA PROJECT DEMONSTRATION",
         fontname="helv",
-        fontsize=12,
+        fontsize=13,
+        color=_SINDH_GREEN,
+        align=pymupdf.TEXT_ALIGN_CENTER,
+    )
+    page.insert_textbox(
+        pymupdf.Rect(_MARGIN_L, 63, _MARGIN_R, 84),
+        "NOT AN OFFICIAL GOVERNMENT DOCUMENT",
+        fontname="helv",
+        fontsize=11,
+        color=_WARNING_RED,
+        align=pymupdf.TEXT_ALIGN_CENTER,
+    )
+    page.insert_textbox(
+        pymupdf.Rect(_MARGIN_L, 86, _MARGIN_R, 106),
+        f"Department entered: {(department or 'Not specified').upper()}",
+        fontname="helv",
+        fontsize=10,
         color=_BLACK,
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
-
-    dept_upper = (department or "GOVERNMENT OF SINDH").upper()
-    page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 124, _MARGIN_R, 148),
-        dept_upper,
-        fontname="helv",
-        fontsize=10.5,
-        color=_BLACK,
-        align=pymupdf.TEXT_ALIGN_CENTER,
-    )
-
-    # Thin rule under department name
     page.draw_line(
-        pymupdf.Point(_MARGIN_L, 150),
-        pymupdf.Point(_MARGIN_R, 150),
+        pymupdf.Point(_MARGIN_L, 109),
+        pymupdf.Point(_MARGIN_R, 109),
         color=_BLACK,
         width=0.5,
     )
 
-    # ------------------------------------------------------------------ #
-    # 3. City and Date (right-aligned, italic)                            #
-    # ------------------------------------------------------------------ #
     if hasattr(document_date, "strftime"):
         date_str = document_date.strftime("%d %B, %Y")
     else:
         date_str = str(document_date)
-    city_date = f"Karachi, dated the {date_str}"
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 155, _MARGIN_R, 180),
-        city_date,
+        pymupdf.Rect(_MARGIN_L, 114, _MARGIN_R, 137),
+        f"Document date entered: {date_str}",
         fontname="times-italic",
         fontsize=10.5,
         color=_DARK_GREY,
         align=pymupdf.TEXT_ALIGN_RIGHT,
     )
 
-    # ------------------------------------------------------------------ #
-    # 4. Document heading  e.g. "O R D E R"  (centered, bold, spaced)    #
-    # ------------------------------------------------------------------ #
     cat_upper = (category or "NOTIFICATION").upper()
     spaced_heading = " ".join(list(cat_upper))
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 185, _MARGIN_R, 215),
+        pymupdf.Rect(_MARGIN_L, 142, _MARGIN_R, 172),
         spaced_heading,
         fontname="times-bold",
         fontsize=14,
@@ -344,37 +296,32 @@ def generate_official_sindh_pdf(
     heading_width = min(len(spaced_heading) * 8.5, _MARGIN_R - _MARGIN_L)
     cx = _PAGE_W / 2
     page.draw_line(
-        pymupdf.Point(cx - heading_width / 2, 216),
-        pymupdf.Point(cx + heading_width / 2, 216),
+        pymupdf.Point(cx - heading_width / 2, 173),
+        pymupdf.Point(cx + heading_width / 2, 173),
         color=_BLACK,
         width=0.8,
     )
 
-    # ------------------------------------------------------------------ #
-    # 5. Reference number                                                 #
-    # ------------------------------------------------------------------ #
-    effective_ref = (
-        official_reference.strip()
-        if official_reference and official_reference.strip()
-        else reference
-    )
-    if effective_ref.upper().startswith("NO.") or effective_ref.upper().startswith("NO "):
-        ref_text = f"{effective_ref}:" if not effective_ref.endswith(":") else effective_ref
-    else:
-        ref_text = f"NO. {effective_ref}:"
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 224, _MARGIN_R, 248),
-        ref_text,
-        fontname="times-bold",
-        fontsize=11,
+        pymupdf.Rect(_MARGIN_L, 181, _MARGIN_R, 198),
+        f"SGNIA project archive reference: {reference}",
+        fontname="helv",
+        fontsize=9,
         color=_BLACK,
         align=pymupdf.TEXT_ALIGN_LEFT,
     )
+    y_cursor = 202
+    if official_reference and official_reference.strip():
+        page.insert_textbox(
+            pymupdf.Rect(_MARGIN_L, 200, _MARGIN_R, 220),
+            f"User-supplied reference (not verified): {official_reference.strip()}",
+            fontname="helv",
+            fontsize=9,
+            color=_DARK_GREY,
+            align=pymupdf.TEXT_ALIGN_LEFT,
+        )
+        y_cursor = 225
 
-    # ------------------------------------------------------------------ #
-    # 6. Subject line (optional)                                          #
-    # ------------------------------------------------------------------ #
-    y_cursor = 250
     if subject and subject.strip():
         subj_text = f"SUBJECT:   {subject.strip().upper()}"
         page.insert_textbox(
@@ -398,7 +345,6 @@ def generate_official_sindh_pdf(
             body_page,
             reference,
             host_url,
-            department,
             include_signatory=page_number == len(body_pages) - 1,
         )
 
@@ -420,8 +366,7 @@ def generate_official_sindh_pdf(
 def ensure_pdf_exists(notification, version=None):
     """Ensure that the PDF file exists on the server filesystem.
 
-    If missing (e.g. after a Render container redeploy or ephemeral disk wipe),
-    this function regenerates the official Sindh Government PDF on the fly using
+    If missing, this function regenerates the project demonstration PDF using
     generate_official_sindh_pdf and saves it to NOTIFICATION_UPLOAD_DIR, guaranteeing
     that no user ever encounters a 404 error when clicking 'View PDF' or 'Open archived PDF'.
     """
@@ -454,11 +399,11 @@ def ensure_pdf_exists(notification, version=None):
         host_url = request.host_url if has_request_context() else "https://sgnia-portal.onrender.com/"
         new_sha256 = generate_official_sindh_pdf(
             reference=notification.reference,
-            title=source.title or notification.title or "Official Notification",
+            title=source.title or notification.title or "Project Demonstration",
             category=source.category or notification.category or "Notification",
-            department=source.department or notification.department or "Government of Sindh",
-            subject=source.subject or source.title or "Official Notification",
-            body=source.body or "This official notification has been published in the digital gazette of the Government of Sindh.",
+            department=source.department or notification.department or "Not specified",
+            subject=source.subject or source.title or "Project Demonstration",
+            body=source.body or "This project demonstration record contains no Government-issued content.",
             document_date=doc_date,
             official_reference=source.official_reference or notification.official_reference,
             destination_path=target_file,

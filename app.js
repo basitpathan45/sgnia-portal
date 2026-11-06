@@ -220,7 +220,7 @@ function showVerifiedRecord(record) {
   verifyResult.hidden = false;
   verifyResult.classList.remove("not-found");
 
-  const recordSource = record.isSgniaRecord ? "Official SGNIA Record" : "Govt of Sindh Portal Listing";
+  const recordSource = record.isSgniaRecord ? "SGNIA project record" : "Govt of Sindh Portal Listing";
   const documentLink = record.isSgniaRecord ? "Open Archived PDF Document" : "Open PDF on Official Sindh Govt Portal";
   const formattedDate = formatDate(record.date, { day: "numeric", month: "short", year: "numeric" });
 
@@ -229,14 +229,14 @@ function showVerifiedRecord(record) {
         <div class="integrity-waiting" id="pdf-integrity-result" aria-live="polite">
           <div class="integrity-waiting-icon">🔍</div>
           <div class="integrity-waiting-text">
-            <strong>Awaiting PDF Upload for Verification</strong>
-            <span>Choose your local PDF file below to verify if it is 100% Genuine or Tampered.</span>
+            <strong>Compare a PDF with the archived copy</strong>
+            <span>Choose a local PDF to check whether its bytes match the file stored for this project record.</span>
           </div>
         </div>
         <details class="sha-technical-details" id="sha-details-accordion">
           <summary>Technical Details & SHA-256 Fingerprint</summary>
           <div class="sha-detail-block">
-            <span class="sha-detail-label">Official Stored Fingerprint:</span>
+            <span class="sha-detail-label">Stored file fingerprint:</span>
             <code class="sha-hash-code">${escapeHtml(record.pdfSha256)}</code>
             <p class="sha-note">Verified locally in your browser using WebCrypto SHA-256. Zero data uploaded to servers.</p>
           </div>
@@ -658,8 +658,8 @@ verificationPdfInput.addEventListener("change", async () => {
   result.innerHTML = `
     <div class="integrity-spinner"></div>
     <div class="integrity-waiting-text">
-      <strong>Checking Document Authenticity...</strong>
-      <span>Calculating cryptographic SHA-256 fingerprint locally in browser.</span>
+      <strong>Comparing PDF fingerprints...</strong>
+      <span>Calculating the SHA-256 fingerprint locally in your browser.</span>
     </div>`;
 
   try {
@@ -690,11 +690,11 @@ verificationPdfInput.addEventListener("change", async () => {
         </div>
         <div class="integrity-banner-body">
           <div class="status-headline status-headline-green">
-            <span class="status-tag status-tag-green">ORIGINAL DOCUMENT</span>
-            <strong>AUTHENTICATED & VERIFIED</strong>
+            <span class="status-tag status-tag-green">BYTE-FOR-BYTE MATCH</span>
+            <strong>FILE MATCHES THE STORED COPY</strong>
           </div>
           <p class="status-description">
-            Yeh document <strong>100% Asli (Genuine)</strong> hai. Sindh Government ke official published record ke sath byte-for-byte match karta hai. Is document mein koi tabdeeli ya tampering nahi ki gayi.
+            The selected file matches the PDF stored for this SGNIA project record. This comparison checks file integrity only; it does not prove Government issuance or authenticity.
           </p>
         </div>`;
     } else {
@@ -705,11 +705,11 @@ verificationPdfInput.addEventListener("change", async () => {
         </div>
         <div class="integrity-banner-body">
           <div class="status-headline status-headline-red">
-            <span class="status-tag status-tag-red">FAKE / TAMPERED</span>
-            <strong>VERIFICATION FAILED</strong>
+            <span class="status-tag status-tag-red">NO FILE MATCH</span>
+            <strong>FINGERPRINTS DO NOT MATCH</strong>
           </div>
           <p class="status-description">
-            <strong>Khabardar!</strong> Yeh document official record se match <strong>nahin karta</strong>. Is file mein tabdeeli (tampering) ki gayi hai ya yeh nakli/unauthorized copy hai.
+            The selected file differs from the PDF currently stored for this project record. It may be another version or a changed file; this result alone does not establish forgery or tampering.
           </p>
         </div>`;
     }
@@ -721,7 +721,7 @@ verificationPdfInput.addEventListener("change", async () => {
         <summary>Technical Verification Details (SHA-256)</summary>
         <div class="sha-detail-block">
           <div class="sha-row">
-            <span class="sha-row-label">Official Record Hash:</span>
+            <span class="sha-row-label">Stored PDF hash:</span>
             <code class="sha-hash-code font-mono">${escapeHtml(selectedVerificationRecord.pdfSha256)}</code>
           </div>
           <div class="sha-row">

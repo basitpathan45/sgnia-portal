@@ -39,7 +39,7 @@ log = logging.getLogger(__name__)
 STATUS_FLOW = {
     "Draft": {"submit": "Pending Approval"},
     "Returned": {"submit": "Pending Approval"},
-    "Pending Approval": {"approve": "Published", "return": "Returned", "reject": "Rejected"},
+    "Pending Approval": {"approve": "Approved", "return": "Returned", "reject": "Rejected"},
     "Approved": {"publish": "Published"},
 }
 
@@ -264,7 +264,7 @@ def notification_new():
             uploaded_pdf.save(upload_dir / stored_pdf_name)
             document_sha256 = sha256_file(upload_dir / stored_pdf_name)
         else:
-            # --- Auto-generate official Sindh Government PDF ---
+            # --- Auto-generate a clearly labeled project demonstration PDF ---
             try:
                 document_sha256 = generate_official_sindh_pdf(
                     reference=reference,
@@ -280,7 +280,7 @@ def notification_new():
                 )
             except Exception as exc:
                 log.exception("PDF auto-generation failed for draft %s: %s", reference, exc)
-                flash("Failed to auto-generate the official PDF. Please try uploading a PDF manually.", "danger")
+                flash("Failed to generate the project PDF. Please try uploading a PDF manually.", "danger")
                 return render_template("notification_new.html", form=form)
 
         notification = Notification(
@@ -392,11 +392,22 @@ def process_approval(notification_id, action):
         abort(400, description="A notification PDF is required before publication.")
     version = latest_version(notification)
     if next_status == "Published":
-        if version is not None and notification.pdf_path:
-            try:
-                sign_published_version(version, notification.reference)
-            except SigningConfigurationError as error:
-                current_app.logger.warning("Signing skipped or key missing: %s", error)
+        if version is None or not notification.pdf_path:
+            abort(400, description="A versioned notification PDF is required before publication.")
+        try:
+            sign_published_version(version, notification.reference)
+        except SigningConfigurationError as error:
+            db.session.rollback()
+            current_app.logger.error(
+                "Publication blocked because signing failed for %s: %s",
+                notification.reference,
+                error,
+            )
+            flash(
+                "Publication blocked because the signing key or PDF could not be verified. Contact an administrator.",
+                "danger",
+            )
+            return redirect(url_for("staff.approvals"))
     notification.status = next_status
     notification.reviewed_by = current_user
     if version and (version.status == current_status or next_status == "Published"):
@@ -595,7 +606,7 @@ def notification_amend(notification_id):
             uploaded_pdf.save(upload_dir / stored_pdf_name)
             document_sha256 = sha256_file(upload_dir / stored_pdf_name)
         else:
-            # --- Auto-generate official Sindh Government PDF for amendment ---
+            # --- Auto-generate a clearly labeled project demonstration PDF ---
             amendment_ref = f"{notification.reference}-v{version_number}"
             try:
                 document_sha256 = generate_official_sindh_pdf(
@@ -612,7 +623,7 @@ def notification_amend(notification_id):
                 )
             except Exception as exc:
                 log.exception("PDF auto-generation failed for amendment %s v%s: %s", notification.reference, version_number, exc)
-                flash("Failed to auto-generate the official PDF. Please try uploading a PDF manually.", "danger")
+                flash("Failed to generate the project PDF. Please try uploading a PDF manually.", "danger")
                 return render_template("notification_amend.html", form=form, notification=notification)
 
         version = NotificationVersion(
@@ -799,11 +810,23 @@ def process_amendment_approval(version_id, action):
     if not next_status:
         abort(400, description=f"Action '{action}' is not allowed for amendment status '{current_status}'.")
     if next_status == "Published":
-        if version.pdf_path:
-            try:
-                sign_published_version(version, notification.reference)
-            except SigningConfigurationError as error:
-                current_app.logger.warning("Signing skipped or key missing: %s", error)
+        if not version.pdf_path:
+            abort(400, description="An amendment PDF is required before publication.")
+        try:
+            sign_published_version(version, notification.reference)
+        except SigningConfigurationError as error:
+            db.session.rollback()
+            current_app.logger.error(
+                "Amendment publication blocked because signing failed for %s version %s: %s",
+                notification.reference,
+                version.version_number,
+                error,
+            )
+            flash(
+                "Publication blocked because the signing key or PDF could not be verified. Contact an administrator.",
+                "danger",
+            )
+            return redirect(url_for("staff.approvals"))
         notification.title = version.title
         notification.category = version.category
         notification.department = version.department

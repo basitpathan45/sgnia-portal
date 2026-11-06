@@ -9,14 +9,18 @@ services:
     dockerContext: .
     envVars:
       - key: APP_ENV
-        value: development
+        value: production
       - key: SUPER_ADMIN_EMAIL
-        value: owaispathan@sgnia.gos.pk
+        sync: false
       - key: FLASK_SECRET_KEY
-        value: Za7aJQYZbRjo4StPElZRP0vlUaQK1x_y0e5-Dh-uFnqVQ0lCeFU-9opMVrSguaxC
+        sync: false
       - key: SUPABASE_URL
         value: https://kjbykrabingylawchnyy.supabase.co
       - key: SUPABASE_ANON_KEY
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqYnlrcmFiaW5neWxhd2Nobnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5MzM0MzQsImV4cCI6MjEwODUwOTQzNH0.T5K5GoszV1CCCIE1Xe0_ml60pVY0WFVcDyKtlE6lI5o
       - key: DATABASE_URL
-        value: postgresql+psycopg2://postgres.kjbykrabingylawchnyy:SGNIA2787858@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres?sslmode=require
+        sync: false
+      - key: NOTIFICATION_UPLOAD_DIR
+        sync: false
+      - key: SIGNING_KEY_DIR
+        sync: false

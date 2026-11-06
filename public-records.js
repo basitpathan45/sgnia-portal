@@ -1,7 +1,7 @@
 /**
  * SGNIA Public Records Integration
- * Loads live published records from Supabase PostgreSQL database,
- * with graceful fallback to Flask API and offline bundled records.
+ * Merges live published records from Supabase and the Flask API with
+ * the bundled source listings.
  */
 
 function resolveShortDepartment(name, code) {
@@ -126,11 +126,9 @@ async function loadPublishedFlaskRecords() {
 
 async function initializePublicRecords() {
   const supabaseSuccess = await loadLiveRecordsFromSupabase();
-  if (!supabaseSuccess) {
-    const flaskSuccess = await loadPublishedFlaskRecords();
-    if (!flaskSuccess && window.location.protocol !== "file:") {
-      document.dispatchEvent(new CustomEvent("sgnia:public-records-unavailable"));
-    }
+  const flaskSuccess = await loadPublishedFlaskRecords();
+  if (!supabaseSuccess && !flaskSuccess && window.location.protocol !== "file:") {
+    document.dispatchEvent(new CustomEvent("sgnia:public-records-unavailable"));
   }
 }
 

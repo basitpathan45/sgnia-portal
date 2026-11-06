@@ -66,13 +66,15 @@ class PdfGeneratorTests(unittest.TestCase):
         text = " ".join(page.get_text() for page in document)
         normalized_text = " ".join(text.split())
         for expected in (
-            "Karachi, dated the 5th November, 2026",
+            "SGNIA PROJECT DEMONSTRATION",
+            "NOT AN OFFICIAL GOVERNMENT DOCUMENT",
+            "Document date entered: 05 November, 2026",
             "SO(G)/ENERGY/SOLAR/2026-001",
             "reconstitute the Review Committee",
             "fortnightly review meetings",
             "forty-five (45) days",
             "shall come into force with immediate effect",
-            "SECRETARY",
+            "Project workflow preview",
             "Government of Sindh",
             "(continued)",
         ):
@@ -85,6 +87,9 @@ class PdfGeneratorTests(unittest.TestCase):
 
         self.assertEqual(document.page_count, 1)
         self.assertIn("The committee shall meet monthly.", document[0].get_text())
+        self.assertIn("NOT AN OFFICIAL GOVERNMENT DOCUMENT", document[0].get_text())
+        self.assertNotIn("SECRETARY TO GOVT. OF SINDH", document[0].get_text())
+        self.assertNotIn("OFFICIAL SINDH GOVERNMENT NOTIFICATION", document[0].get_text())
 
     def test_saved_draft_pdf_can_be_regenerated_without_changing_published_pdf(self):
         from app import create_app
