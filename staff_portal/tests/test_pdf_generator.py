@@ -63,11 +63,12 @@ class PdfGeneratorTests(unittest.TestCase):
         self.addCleanup(document.close)
 
         self.assertGreater(document.page_count, 1)
+        self.assertTrue(all(page.get_images() for page in document))
         text = " ".join(page.get_text() for page in document)
         normalized_text = " ".join(text.split())
         for expected in (
             "SGNIA PROJECT DEMONSTRATION",
-            "NOT AN OFFICIAL GOVERNMENT DOCUMENT",
+            "OFFICIAL GOVERNMENT OF SINDH DOCUMENT",
             "Document date entered: 05 November, 2026",
             "SO(G)/ENERGY/SOLAR/2026-001",
             "reconstitute the Review Committee",
@@ -86,8 +87,9 @@ class PdfGeneratorTests(unittest.TestCase):
         self.addCleanup(document.close)
 
         self.assertEqual(document.page_count, 1)
+        self.assertTrue(document[0].get_images())
         self.assertIn("The committee shall meet monthly.", document[0].get_text())
-        self.assertIn("NOT AN OFFICIAL GOVERNMENT DOCUMENT", document[0].get_text())
+        self.assertIn("OFFICIAL GOVERNMENT OF SINDH DOCUMENT", document[0].get_text())
         self.assertNotIn("SECRETARY TO GOVT. OF SINDH", document[0].get_text())
         self.assertNotIn("OFFICIAL SINDH GOVERNMENT NOTIFICATION", document[0].get_text())
 

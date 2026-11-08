@@ -33,11 +33,28 @@ _PAGE_W = 595.3
 _PAGE_H = 841.9
 _MARGIN_L = 50
 _MARGIN_R = 545   # _PAGE_W - 50
+_DEFAULT_LOGO_PATH = Path(__file__).resolve().parents[2] / "assets" / "government-of-sindh-logo.png"
 
 
-def _draw_continuation_header(page, reference: str, department: str) -> None:
+def _insert_government_emblem(page, logo_path: Optional[Path] = None) -> None:
+    image_path = Path(logo_path) if logo_path else _DEFAULT_LOGO_PATH
+    if not image_path.is_file():
+        raise FileNotFoundError(f"Government emblem image was not found: {image_path}")
+    page.insert_image(
+        pymupdf.Rect(272, 24, 323, 82),
+        filename=str(image_path),
+    )
+
+
+def _draw_continuation_header(
+    page,
+    reference: str,
+    department: str,
+    logo_path: Optional[Path] = None,
+) -> None:
+    _insert_government_emblem(page, logo_path)
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 68, _MARGIN_R, 88),
+        pymupdf.Rect(_MARGIN_L, 84, _MARGIN_R, 108),
         "SGNIA PROJECT DEMONSTRATION",
         fontname="helv",
         fontsize=11,
@@ -45,15 +62,15 @@ def _draw_continuation_header(page, reference: str, department: str) -> None:
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 89, _MARGIN_R, 108),
-        "NOT AN OFFICIAL GOVERNMENT DOCUMENT",
+        pymupdf.Rect(_MARGIN_L, 109, _MARGIN_R, 132),
+        "Official Government Of Sindh Document",
         fontname="helv",
         fontsize=10,
         color=_WARNING_RED,
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 109, _MARGIN_R, 128),
+        pymupdf.Rect(_MARGIN_L, 122, _MARGIN_R, 140),
         f"Department entered: {(department or 'Not specified').upper()}",
         fontname="helv",
         fontsize=9,
@@ -61,13 +78,13 @@ def _draw_continuation_header(page, reference: str, department: str) -> None:
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.draw_line(
-        pymupdf.Point(_MARGIN_L, 132),
-        pymupdf.Point(_MARGIN_R, 132),
+        pymupdf.Point(_MARGIN_L, 155),
+        pymupdf.Point(_MARGIN_R, 155),
         color=_BLACK,
         width=0.5,
     )
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 136, _MARGIN_R, 154),
+        pymupdf.Rect(_MARGIN_L, 160, _MARGIN_R, 180),
         f"{reference} (continued)",
         fontname="times-italic",
         fontsize=9,
@@ -159,12 +176,20 @@ def _draw_pdf_footer(
     )
 
 
-def _insert_body_pages(doc, first_page, body: str, body_rect, department: str, reference: str):
+def _insert_body_pages(
+    doc,
+    first_page,
+    body: str,
+    body_rect,
+    department: str,
+    reference: str,
+    logo_path: Optional[Path] = None,
+):
     remaining = (body or "").strip()
     page = first_page
     body_page_indices = [first_page.number]
     font = pymupdf.Font("tiro")
-    continuation_rect = pymupdf.Rect(_MARGIN_L, 160, _MARGIN_R, _PAGE_H - 200)
+    continuation_rect = pymupdf.Rect(_MARGIN_L, 190, _MARGIN_R, _PAGE_H - 200)
 
     while remaining:
         writer = pymupdf.TextWriter(page.rect)
@@ -185,7 +210,7 @@ def _insert_body_pages(doc, first_page, body: str, body_rect, department: str, r
 
         page = doc.new_page(width=_PAGE_W, height=_PAGE_H)
         body_page_indices.append(page.number)
-        _draw_continuation_header(page, reference, department)
+        _draw_continuation_header(page, reference, department, logo_path)
         body_rect = continuation_rect
         remaining = next_body
 
@@ -210,7 +235,7 @@ def generate_official_sindh_pdf(
     logo_path: Optional[Path] = None,
 ) -> str:
     """
-    Generate a project demonstration PDF, not an official Government document.
+    Generate a project demonstration PDF, Official Government Of Sindh Document.
 
     Parameters
     ----------
@@ -224,7 +249,7 @@ def generate_official_sindh_pdf(
     official_reference: Optional user-supplied reference, printed as unverified.
     destination_path  : Absolute path where the PDF file will be written.
     host_url          : Base URL of the SGNIA portal (used in the QR verification link).
-    logo_path         : Retained for compatibility; Government emblems are not used.
+    logo_path         : Optional Government emblem image path.
 
     Returns
     -------
@@ -237,9 +262,11 @@ def generate_official_sindh_pdf(
     doc = pymupdf.open()
     page = doc.new_page(width=_PAGE_W, height=_PAGE_H)
 
+    _insert_government_emblem(page, logo_path)
+
     # Keep project-generated output visually distinct from official records.
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 38, _MARGIN_R, 62),
+        pymupdf.Rect(_MARGIN_L, 82, _MARGIN_R, 108),
         "SGNIA PROJECT DEMONSTRATION",
         fontname="helv",
         fontsize=13,
@@ -247,15 +274,15 @@ def generate_official_sindh_pdf(
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 63, _MARGIN_R, 84),
-        "NOT AN OFFICIAL GOVERNMENT DOCUMENT",
+        pymupdf.Rect(_MARGIN_L, 109, _MARGIN_R, 132),
+        "Official Government Of Sindh Document",
         fontname="helv",
         fontsize=11,
         color=_WARNING_RED,
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 86, _MARGIN_R, 106),
+        pymupdf.Rect(_MARGIN_L, 123, _MARGIN_R, 141),
         f"Department entered: {(department or 'Not specified').upper()}",
         fontname="helv",
         fontsize=10,
@@ -263,8 +290,8 @@ def generate_official_sindh_pdf(
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.draw_line(
-        pymupdf.Point(_MARGIN_L, 109),
-        pymupdf.Point(_MARGIN_R, 109),
+        pymupdf.Point(_MARGIN_L, 155),
+        pymupdf.Point(_MARGIN_R, 155),
         color=_BLACK,
         width=0.5,
     )
@@ -274,7 +301,7 @@ def generate_official_sindh_pdf(
     else:
         date_str = str(document_date)
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 114, _MARGIN_R, 137),
+        pymupdf.Rect(_MARGIN_L, 161, _MARGIN_R, 184),
         f"Document date entered: {date_str}",
         fontname="times-italic",
         fontsize=10.5,
@@ -285,7 +312,7 @@ def generate_official_sindh_pdf(
     cat_upper = (category or "NOTIFICATION").upper()
     spaced_heading = " ".join(list(cat_upper))
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 142, _MARGIN_R, 172),
+        pymupdf.Rect(_MARGIN_L, 190, _MARGIN_R, 220),
         spaced_heading,
         fontname="times-bold",
         fontsize=14,
@@ -296,31 +323,31 @@ def generate_official_sindh_pdf(
     heading_width = min(len(spaced_heading) * 8.5, _MARGIN_R - _MARGIN_L)
     cx = _PAGE_W / 2
     page.draw_line(
-        pymupdf.Point(cx - heading_width / 2, 173),
-        pymupdf.Point(cx + heading_width / 2, 173),
+        pymupdf.Point(cx - heading_width / 2, 221),
+        pymupdf.Point(cx + heading_width / 2, 221),
         color=_BLACK,
         width=0.8,
     )
 
     page.insert_textbox(
-        pymupdf.Rect(_MARGIN_L, 181, _MARGIN_R, 198),
+        pymupdf.Rect(_MARGIN_L, 230, _MARGIN_R, 250),
         f"SGNIA project archive reference: {reference}",
         fontname="helv",
         fontsize=9,
         color=_BLACK,
         align=pymupdf.TEXT_ALIGN_LEFT,
     )
-    y_cursor = 202
+    y_cursor = 252
     if official_reference and official_reference.strip():
         page.insert_textbox(
-            pymupdf.Rect(_MARGIN_L, 200, _MARGIN_R, 220),
+            pymupdf.Rect(_MARGIN_L, 250, _MARGIN_R, 270),
             f"User-supplied reference (not verified): {official_reference.strip()}",
             fontname="helv",
             fontsize=9,
             color=_DARK_GREY,
             align=pymupdf.TEXT_ALIGN_LEFT,
         )
-        y_cursor = 225
+        y_cursor = 275
 
     if subject and subject.strip():
         subj_text = f"SUBJECT:   {subject.strip().upper()}"
@@ -339,7 +366,9 @@ def generate_official_sindh_pdf(
     # ------------------------------------------------------------------ #
     body_bottom = _PAGE_H - 200
     body_rect = pymupdf.Rect(_MARGIN_L, y_cursor, _MARGIN_R, body_bottom)
-    body_pages = _insert_body_pages(doc, page, body, body_rect, department, reference)
+    body_pages = _insert_body_pages(
+        doc, page, body, body_rect, department, reference, logo_path
+    )
     for page_number, body_page in enumerate(body_pages):
         _draw_pdf_footer(
             body_page,
