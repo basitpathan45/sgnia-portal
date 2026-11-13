@@ -270,7 +270,7 @@ def generate_official_sindh_pdf(
         "GOVERNMENT OF SINDH",
         fontname="helv",
         fontsize=13,
-        color=_SINDH_GREEN,
+        color=_SINDH_GREEN_LABEL ,
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.insert_textbox(
