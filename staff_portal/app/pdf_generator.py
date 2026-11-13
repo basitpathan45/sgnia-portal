@@ -166,7 +166,7 @@ def _draw_pdf_footer(
         "This QR code confirms that this document is issued by the government.",
         fontname="helv",
         fontsize=5.5,
-        color=_GREEN,
+        color=_SINDH_GREEN_LABEL ,
     )
     page.draw_line(
         pymupdf.Point(_MARGIN_L, qr_top - 5),
