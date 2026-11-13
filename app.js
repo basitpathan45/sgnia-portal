@@ -582,19 +582,19 @@ function lookupArchiveRecord(reference) {
           <strong class="not-found-title">Document Record Not Found</strong>
           <p class="not-found-message">
             ${isPureNumber ? `
-              Aap ne sirf number <code>${escapeHtml(rawInput)}</code> darj kiya hai. Plain numbers se document verify <strong>nahi ho sakta</strong>.
+            You have only entered the number <code>${escapeHtml(rawInput)}</code>. A document <strong>cannot be verified</strong> using plain numbers.
             ` : isTooShort ? `
-              Search query bohot choti hai (${escapeHtml(rawInput)}). Barah-e-karam kam az kam 3 characters darj karein.
+              The search query is too short (${escapeHtml(rawInput)}). Please enter at least 3 characters.
             ` : `
-              <code>${escapeHtml(rawInput)}</code> se koi official notification record match nahi hua.
+              No official notification record matched <code>${escapeHtml(rawInput)}</code>.
             `}
           </p>
           <div class="not-found-guide">
-            <span>Barah-e-karam notification par darj in mein se koi ek maloomat darj karein:</span>
+            <span>Please enter any one of the following details mentioned on the notification:</span>
             <ul>
-              <li><strong>Archive Reference:</strong> Maslan <code>SGNIA-2026-0FD1FA7E</code> ya <code>SGNIA-ARCH-031</code></li>
-              <li><strong>Official Reference:</strong> Maslan <code>SO(T)/HD/9-2/2026</code> ya <code>SOVI(SGA&CD)</code></li>
-              <li><strong>Document Title:</strong> Maslan <em>Imposition of Section 144</em></li>
+              <li><strong>Archive Reference:</strong> For example, <code>SGNIA-2026-0FD1FA7E</code> or <code>SGNIA-ARCH-031</code></li>
+              <li><strong>Official Reference:</strong> For example, <code>SO(T)/HD/9-2/2026</code> or <code>SOVI(SGA&CD)</code></li>
+              <li><strong>Document Title:</strong> For example, <em>Imposition of Section 144</em></li>
             </ul>
           </div>
         </div>
