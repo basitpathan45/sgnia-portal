@@ -103,7 +103,7 @@ def _draw_pdf_footer(
         sig_top = _PAGE_H - 185
         page.insert_textbox(
             pymupdf.Rect(300, sig_top, _MARGIN_R, sig_top + 25),
-            "Project workflow preview",
+            "APPROVED BY HEAD OF DEPARTMENT",
             fontname="times-bold",
             fontsize=11,
             color=_BLACK,
@@ -267,7 +267,7 @@ def generate_official_sindh_pdf(
     # Keep project-generated output visually distinct from official records.
     page.insert_textbox(
         pymupdf.Rect(_MARGIN_L, 82, _MARGIN_R, 108),
-        "SGNIA PROJECT DEMONSTRATION",
+        "GOVERNMENT OF SINDH",
         fontname="helv",
         fontsize=13,
         color=_SINDH_GREEN,
@@ -275,10 +275,10 @@ def generate_official_sindh_pdf(
     )
     page.insert_textbox(
         pymupdf.Rect(_MARGIN_L, 109, _MARGIN_R, 132),
-        "Official Government Of Sindh Document",
+        "Sindh Government Notification Issuing Authority",
         fontname="helv",
         fontsize=11,
-        color=_WARNING_RED,
+        color=_SINDH_GREEN_LABEL ,
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.insert_textbox(
