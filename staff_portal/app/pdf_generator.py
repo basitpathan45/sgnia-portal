@@ -55,7 +55,7 @@ def _draw_continuation_header(
     _insert_government_emblem(page, logo_path)
     page.insert_textbox(
         pymupdf.Rect(_MARGIN_L, 84, _MARGIN_R, 108),
-        "SGNIA PROJECT DEMONSTRATION",
+        "GOVERNMENT OF SINDH",
         fontname="helv",
         fontsize=11,
         color=_SINDH_GREEN,
@@ -63,10 +63,10 @@ def _draw_continuation_header(
     )
     page.insert_textbox(
         pymupdf.Rect(_MARGIN_L, 109, _MARGIN_R, 132),
-        "Official Government Of Sindh Document",
+        "Sindh Government Notification Issuing Authority",
         fontname="helv",
         fontsize=10,
-        color=_WARNING_RED,
+        color=_BLACK,
         align=pymupdf.TEXT_ALIGN_CENTER,
     )
     page.insert_textbox(
@@ -111,7 +111,7 @@ def _draw_pdf_footer(
         )
         page.insert_textbox(
             pymupdf.Rect(300, sig_top + 45, _MARGIN_R, sig_top + 65),
-            "No Government signatory is represented",
+            "Government signatory is represented",
             fontname="helv",
             fontsize=8,
             color=_MID_GREY,
@@ -142,7 +142,7 @@ def _draw_pdf_footer(
     lbl_x0 = _MARGIN_L + 80
     page.insert_textbox(
         pymupdf.Rect(lbl_x0, qr_top + 5, 330, qr_top + 18),
-        "SGNIA PROJECT DEMONSTRATION",
+        "Government Of Sindh",
         fontname="helv",
         fontsize=6.5,
         color=_SINDH_GREEN_LABEL,
@@ -163,10 +163,10 @@ def _draw_pdf_footer(
     )
     page.insert_textbox(
         pymupdf.Rect(lbl_x0, qr_top + 45, 330, qr_top + 56),
-        "This QR code does not prove Government issuance",
+        "This QR code confirms that this document is issued by the government.",
         fontname="helv",
         fontsize=5.5,
-        color=_WARNING_RED,
+        color=_GREEN,
     )
     page.draw_line(
         pymupdf.Point(_MARGIN_L, qr_top - 5),
